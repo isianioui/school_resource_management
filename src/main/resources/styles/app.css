@@ -1,0 +1,32 @@
+.root-container {
+    -fx-background-color: #f4f4f4;
+    -fx-padding: 30;
+    -fx-alignment: center;
+    -fx-border-radius: 10;
+    -fx-border-color: #ccc;
+}
+
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.action-button {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 5 15;
+    -fx-border-radius: 5;
+}
+
+.action-button:hover {
+    -fx-background-color: #45a049;
+}
+
+.hyperlink {
+    -fx-text-fill: #0078D7;
+}
+
+.hyperlink:hover {
+    -fx-underline: true;
+}

@@ -1,0 +1,7 @@
+com\example\controllers\RegistrationController.class
+com\example\App\MainApp.class
+com\example\controllers\AuthController.class
+com\example\dao\UserDAO.class
+com\example\models\User.class
+com\example\controllers\LoginController.class
+com\example\database\databaseConnection.class
