@@ -1,0 +1,55 @@
+.root-container {
+    -fx-background-color: #ffffff;
+    -fx-padding: 30;
+    -fx-max-width: 400;
+}
+
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+.form-container {
+    -fx-padding: 20;
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 10;
+}
+
+.input-field {
+    -fx-pref-height: 40;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1;
+    -fx-padding: 5 10 5 10;
+}
+
+.input-field:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 2;
+}
+
+.action-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-pref-width: 200;
+    -fx-pref-height: 40;
+    -fx-background-radius: 20;
+}
+
+.action-button:hover {
+    -fx-background-color: #2980b9;
+    -fx-cursor: hand;
+}
+
+.login-link {
+    -fx-text-fill: #3498db;
+    -fx-font-weight: bold;
+}
+
+.error-label {
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 12px;
+}

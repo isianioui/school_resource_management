@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
+            fx:controller="com.example.controllers.dashboardController" 
+            styleClass="dashboard-container"
+                maxWidth="Infinity" 
+      maxHeight="Infinity"
+
+            >
+    
+    <!-- Left Sidebar Navigation -->
+    <left>
+        <VBox styleClass="sidebar">
+            <Label text="Welcome, " fx:id="userNameLabel" styleClass="welcome-text"/>
+            <Button text="Users" onAction="#showUsers" styleClass="nav-button"/>
+            <Button text="Reservations" onAction="#showReservations" styleClass="nav-button"/>
+            <Button text="Resources" onAction="#showResources" styleClass="nav-button"/>
+            <Button text="Events" onAction="#showEvents" styleClass="nav-button"/>
+            <Button text="Reports" onAction="#showReports" styleClass="nav-button"/>
+            <Button text="Notifications" onAction="#showNotifications" styleClass="nav-button"/>
+            <Button text="Logout" onAction="#handleLogout" styleClass="logout-button"/>
+            <Button fx:id="addResourceButton" text="Add Resource" styleClass="nav-button"/>
+<Button fx:id="editResourceButton" text="Edit Resource" styleClass="nav-button"/>
+<Button fx:id="deleteResourceButton" text="Delete Resource" styleClass="nav-button"/>
+<Button fx:id="manageUsersButton" text="Manage Users" styleClass="nav-button"/>
+<Button fx:id="generateReportsButton" text="Generate Reports" styleClass="nav-button"/>
+<Button fx:id="viewResourcesButton" text="View Resources" styleClass="nav-button"/>
+<Button fx:id="makeReservationButton" text="Make Reservation" styleClass="nav-button"/>
+<Button fx:id="viewReservationsButton" text="View Reservations" styleClass="nav-button"/>
+<Button fx:id="cancelReservationButton" text="Cancel Reservation" styleClass="nav-button"/>
+<Button fx:id="viewNotificationsButton" text="View Notifications" styleClass="nav-button"/>
+<Button fx:id="sendNotificationsButton" text="Send Notifications" styleClass="nav-button"/>
+<Button fx:id="viewReportsButton" text="View Reports" styleClass="nav-button"/>
+<Button fx:id="generateReportsButton" text="Generate Reports" styleClass="nav-button"/>
+
+
+        </VBox>
+    </left>
+    
+    <!-- Main Content Area -->
+    <center>
+        <StackPane>
+            <!-- Reservations View -->
+            <VBox fx:id="reservationsView" visible="false">
+                <TableView fx:id="reservationsTable">
+                    <columns>
+                        <TableColumn text="ID" fx:id="resIdColumn"/>
+                        <TableColumn text="Resource" fx:id="resourceColumn"/>
+                        <TableColumn text="Date" fx:id="dateColumn"/>
+                        <TableColumn text="Time" fx:id="timeColumn"/>
+                        <TableColumn text="Status" fx:id="statusColumn"/>
+                    </columns>
+                </TableView>
+                <Button text="New Reservation" onAction="#createReservation"/>
+            </VBox>
+            
+            <!-- Resources View -->
+            <VBox fx:id="resourcesView" visible="false">
+                <TableView fx:id="resourcesTable">
+                    <columns>
+                        <TableColumn text="Name" fx:id="resourceNameColumn"/>
+                        <TableColumn text="Type" fx:id="typeColumn"/>
+                        <TableColumn text="Capacity" fx:id="capacityColumn"/>
+                        <TableColumn text="Available" fx:id="availabilityColumn"/>
+                    </columns>
+                </TableView>
+            </VBox>
+            
+            <!-- Events View -->
+            <VBox fx:id="eventsView" visible="false">
+                <TableView fx:id="eventsTable">
+                    <columns>
+                        <TableColumn text="Name" fx:id="eventNameColumn"/>
+                        <TableColumn text="Date" fx:id="eventDateColumn"/>
+                        <TableColumn text="Location" fx:id="locationColumn"/>
+                    </columns>
+                </TableView>
+                <Button text="Create Event" onAction="#createEvent"/>
+            </VBox>
+       <VBox fx:id="statisticsView" visible="false" spacing="20">
+    <!-- Main content area that will expand -->
+    <VBox styleClass="stats-summary" alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
+        <Label fx:id="totalUsersLabel" styleClass="stat-label"/>
+        <Label fx:id="activeReservationsLabel" styleClass="stat-label"/>
+        <Label fx:id="availableResourcesLabel" styleClass="stat-label"/>
+    </VBox>
+    <VBox fx:id="usersView" visible="false">
+    <TableView fx:id="usersTable">
+        <columns>
+            <TableColumn text="Username" fx:id="usernameColumn"/>
+            <TableColumn text="Email" fx:id="emailColumn"/>
+            <TableColumn text="Role" fx:id="roleColumn"/>
+        </columns>
+    </TableView>
+</VBox>
+
+    
+    <!-- Charts fixed at bottom -->
+    <HBox spacing="50" alignment="CENTER" maxHeight="300" styleClass="charts-container" HBox.hgrow="ALWAYS" >
+        <PieChart fx:id="resourceUsageChart" title="Resource Distribution" 
+                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS"/>
+        <BarChart fx:id="reservationsChart" title="Reservations Status" 
+                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS">
+            <xAxis><CategoryAxis /></xAxis>
+            <yAxis><NumberAxis /></yAxis>
+        </BarChart>
+        <PieChart fx:id="userActivityChart" title="User Activity" 
+                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS"/>
+    </HBox>
+</VBox>
+
+
+        </StackPane>
+    </center>
+</BorderPane>

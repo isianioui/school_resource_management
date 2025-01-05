@@ -1,0 +1,41 @@
+.dashboard-container {
+    -fx-background-color: #f4f4f4;
+}
+
+.sidebar {
+    -fx-background-color: #2c3e50;
+    -fx-padding: 20;
+    -fx-spacing: 10;
+    -fx-pref-width: 200;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-alignment: CENTER_LEFT;
+    -fx-pref-width: 180;
+}
+
+.nav-button:hover {
+    -fx-background-color: #34495e;
+}
+
+.welcome-text {
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-padding: 0 0 20 0;
+}
+
+.logout-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+.charts-container {
+    -fx-padding: 0 0 50 0;
+    -fx-spacing: 50;
+}

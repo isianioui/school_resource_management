@@ -7,6 +7,7 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 import com.example.models.User;
@@ -49,18 +50,41 @@ public class RegistrationController {
         }
     }
 
-   public void goToLogin(ActionEvent event) throws IOException {
+//    public void goToLogin(ActionEvent event) throws IOException {
+//     // Load the login form (FXML)
+//     FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
+//     VBox loginView = loader.load();  // Assuming the login screen uses VBox as the root
+
+//     // Get the current stage (window)
+//     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+
+//     // Set the new scene (login screen)
+//     Scene loginScene = new Scene(loginView);
+//     stage.setScene(loginScene);
+// }
+
+
+public void goToLogin(ActionEvent event) throws IOException {
     // Load the login form (FXML)
     FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/login.fxml"));
-    VBox loginView = loader.load();  // Assuming the login screen uses VBox as the root
+    VBox loginView = loader.load();
 
-    // Get the current stage (window)
+    // Create a new scene for the login view with screen dimensions
+    Scene loginScene = new Scene(loginView, Screen.getPrimary().getVisualBounds().getWidth(), 
+                                          Screen.getPrimary().getVisualBounds().getHeight());
+
+    // Add the stylesheet to the scene
+    loginScene.getStylesheets().add(getClass().getResource("/styles/app.css").toExternalForm());
+
+    // Get the current stage and set it to maximized
     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-
-    // Set the new scene (login screen)
-    Scene loginScene = new Scene(loginView);
+    stage.setMaximized(true);
     stage.setScene(loginScene);
+    stage.show();
 }
+
+
+
 
 }
 
