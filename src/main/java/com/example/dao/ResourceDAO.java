@@ -30,5 +30,29 @@ import java.util.List;
             }
             return resources;
         }
+
+        public Resource getResourceById(int resourceId) {
+            String query = "SELECT * FROM resources WHERE resource_id = ?";
+            try (Connection conn = databaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(query)) {
+                
+                stmt.setInt(1, resourceId);
+                ResultSet rs = stmt.executeQuery();
+                
+                if (rs.next()) {
+                    Resource resource = new Resource();
+                    resource.setResource_id(rs.getInt("resource_id"));
+                    resource.setName(rs.getString("name"));
+                    resource.setResource_type(rs.getString("resource_type"));
+                    resource.setCapacity(rs.getInt("capacity"));
+                    resource.setAvailability(rs.getBoolean("availability"));
+                    return resource;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+        
     }
     

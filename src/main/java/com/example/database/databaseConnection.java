@@ -55,6 +55,7 @@ public class databaseConnection {
                 );
                 System.out.println("✅ Database connected successfully!");
             }
+
         } catch (Exception e) {
             System.err.println("❌ Database connection failed: " + e.getMessage());
         }

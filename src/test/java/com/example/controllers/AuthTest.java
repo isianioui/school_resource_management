@@ -1,7 +1,5 @@
 package com.example.controllers;
 
-
-
 import org.junit.jupiter.api.Test;
 
 import com.example.database.databaseConnection;

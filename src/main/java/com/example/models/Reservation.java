@@ -13,10 +13,15 @@ public class Reservation {
     private Date reservation_date;
     private Time reservation_time;
     private String status;
+    private boolean reminder_sent;
+
 
     // Getters and Setters
     public int getReservation_id() { return reservation_id; }
     public void setReservation_id(int reservation_id) { this.reservation_id = reservation_id; }
+    public void setReminder_sent(boolean reminder_sent) { 
+        this.reminder_sent = reminder_sent; 
+    }
     
     public int getUser_id() { return user_id; }
     public void setUser_id(int user_id) { this.user_id = user_id; }
@@ -35,4 +40,5 @@ public class Reservation {
     
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public boolean getReminder_sent() { return reminder_sent; }
 }

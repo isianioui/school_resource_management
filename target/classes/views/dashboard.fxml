@@ -12,6 +12,17 @@
 <?import javafx.scene.chart.BarChart?>
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+
+<?import javafx.scene.control.TextField?>
+
+
+
+
+
+
 
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" 
@@ -21,11 +32,22 @@
       maxHeight="Infinity"
 
             >
-    
-    <!-- Left Sidebar Navigation -->
-    <left>
-        <VBox styleClass="sidebar">
+
+<top>
+    <HBox fx:id="topNavBar" styleClass="top-nav-bar">
             <Label text="Welcome, " fx:id="userNameLabel" styleClass="welcome-text"/>
+
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button fx:id="notificationButton" text="Notifications" onAction="#handleNotificationClick" styleClass="top-nav-button"/>
+                <Button fx:id="homeButton" text="Home" onAction="#handleHomeClick" styleClass="top-nav-button"/>
+        <Button fx:id="contactButton" text="Contact" onAction="#handleContactClick" styleClass="top-nav-button"/>
+    </HBox>
+</top>
+
+    <!-- Left Sidebar Navigation -->
+     <left>
+        <VBox styleClass="sidebar" VBox.vgrow="ALWAYS">
+            <Button text="Dashboard" onAction="#showDashboard" styleClass="nav-button"/>
             <Button text="Users" onAction="#showUsers" styleClass="nav-button"/>
             <Button text="Reservations" onAction="#showReservations" styleClass="nav-button"/>
             <Button text="Resources" onAction="#showResources" styleClass="nav-button"/>
@@ -33,41 +55,118 @@
             <Button text="Reports" onAction="#showReports" styleClass="nav-button"/>
             <Button text="Notifications" onAction="#showNotifications" styleClass="nav-button"/>
             <Button text="Logout" onAction="#handleLogout" styleClass="logout-button"/>
-            <Button fx:id="addResourceButton" text="Add Resource" styleClass="nav-button"/>
-<Button fx:id="editResourceButton" text="Edit Resource" styleClass="nav-button"/>
-<Button fx:id="deleteResourceButton" text="Delete Resource" styleClass="nav-button"/>
-<Button fx:id="manageUsersButton" text="Manage Users" styleClass="nav-button"/>
-<Button fx:id="generateReportsButton" text="Generate Reports" styleClass="nav-button"/>
-<Button fx:id="viewResourcesButton" text="View Resources" styleClass="nav-button"/>
-<Button fx:id="makeReservationButton" text="Make Reservation" styleClass="nav-button"/>
-<Button fx:id="viewReservationsButton" text="View Reservations" styleClass="nav-button"/>
-<Button fx:id="cancelReservationButton" text="Cancel Reservation" styleClass="nav-button"/>
-<Button fx:id="viewNotificationsButton" text="View Notifications" styleClass="nav-button"/>
-<Button fx:id="sendNotificationsButton" text="Send Notifications" styleClass="nav-button"/>
-<Button fx:id="viewReportsButton" text="View Reports" styleClass="nav-button"/>
-<Button fx:id="generateReportsButton" text="Generate Reports" styleClass="nav-button"/>
-
-
+          
         </VBox>
     </left>
     
     <!-- Main Content Area -->
     <center>
         <StackPane>
-            <!-- Reservations View -->
-            <VBox fx:id="reservationsView" visible="false">
-                <TableView fx:id="reservationsTable">
-                    <columns>
-                        <TableColumn text="ID" fx:id="resIdColumn"/>
-                        <TableColumn text="Resource" fx:id="resourceColumn"/>
-                        <TableColumn text="Date" fx:id="dateColumn"/>
-                        <TableColumn text="Time" fx:id="timeColumn"/>
-                        <TableColumn text="Status" fx:id="statusColumn"/>
-                    </columns>
-                </TableView>
-                <Button text="New Reservation" onAction="#createReservation"/>
-            </VBox>
-            
+        <VBox fx:id="usersView" visible="false" spacing="10" fillWidth="true">
+    <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Username" fx:id="usernameColumn" prefWidth="${usersTable.width * 0.2}"/>
+            <TableColumn text="Email" fx:id="emailColumn" prefWidth="${usersTable.width * 0.2}"/>
+            <TableColumn text="Role" fx:id="roleColumn" prefWidth="${usersTable.width * 0.2}" />
+                  <TableColumn text="Status" fx:id="accountStatusColumn" prefWidth="${usersTable.width * 0.2}"/>
+            <TableColumn text="Actions" fx:id="actionsColumn" prefWidth="${usersTable.width * 0.2}"/>
+            <TableColumn text="Last Login" fx:id="lastLoginColumn" prefWidth="${usersTable.width * 0.2}"/>
+
+        </columns>
+    <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+    </columnResizePolicy>
+    </TableView>
+</VBox>
+<VBox fx:id="reservationsView" visible="false" spacing="10">
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="New Reservation" onAction="#openNewReservationForm" styleClass="success-button"/>
+    </HBox>
+    <TableView fx:id="reservationsTable" VBox.vgrow="ALWAYS">
+    <columnResizePolicy>
+        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+    </columnResizePolicy>
+        <columns>
+            <TableColumn text="ID" fx:id="resIdColumn"/>
+            <TableColumn text="Resource" fx:id="resourceColumn"/>
+            <TableColumn text="Date" fx:id="dateColumn"/>
+            <TableColumn text="Time" fx:id="timeColumn"/>
+            <TableColumn text="Status" fx:id="statusColumn"/>
+            <TableColumn text="Reminder" fx:id="reminderColumn"/>
+
+
+            <TableColumn text="Actions" fx:id="reservationActionsColumn"/>
+        </columns>
+    </TableView>
+</VBox>
+
+
+<VBox fx:id="reservationFormView" visible="false" spacing="15" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Reservation Form" styleClass="form-title"/>
+    <ComboBox fx:id="resourceComboBox" promptText="Select Resource" maxWidth="300"/>
+    <DatePicker fx:id="datePicker" promptText="Select Date" maxWidth="300"/>
+    <ComboBox fx:id="timeComboBox" promptText="Select Time" maxWidth="300"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Save" onAction="#handleSave" styleClass="success-button"/>
+        <Button text="Back" onAction="#handleBack" styleClass="danger-button"/>
+    </HBox>
+</VBox>
+
+<VBox fx:id="reservationDetailsView" visible="false" spacing="20" 
+      alignment="CENTER" styleClass="details-container"
+      maxWidth="600" prefWidth="500">
+    
+    <padding>
+        <Insets top="30" right="40" bottom="30" left="40"/>
+    </padding>
+
+    <Label fx:id="reservationIdLabel" styleClass="details-header"/>
+    
+    <VBox spacing="15" styleClass="details-content">
+        <Label fx:id="resourceNameLabel" styleClass="details-label"/>
+        <Label fx:id="resourceTypeLabel" styleClass="details-label"/>
+        <Label fx:id="reservedByLabel" styleClass="details-label"/>
+        <Label fx:id="reservationDateLabel" styleClass="details-label"/>
+        <Label fx:id="reservationTimeLabel" styleClass="details-label"/>
+        <Label fx:id="reservationStatusLabel" styleClass="details-label"/>
+        <Label fx:id="reminderStatusLabel" styleClass="details-label"/>
+    </VBox>
+    
+    <Button fx:id="backToReservationsButton" text="Back to Reservations" 
+            styleClass="info-button"/>
+</VBox>
+
+<VBox fx:id="reservationEditView" visible="false" spacing="20" 
+      alignment="CENTER" styleClass="details-container"
+      maxWidth="600" prefWidth="500">
+    
+    <padding>
+        <Insets top="30" right="40" bottom="30" left="40"/>
+    </padding>
+
+    <Label text="Edit Reservation" styleClass="details-header"/>
+    
+    <VBox spacing="15" styleClass="details-content" alignment="CENTER">
+        <ComboBox fx:id="editResourceComboBox" styleClass="edit-field" prefWidth="300"/>
+        <DatePicker fx:id="editDatePicker" styleClass="edit-field" prefWidth="300"/>
+        <TextField fx:id="editTimeField" styleClass="edit-field" prefWidth="300"/>
+        <ComboBox fx:id="editStatusComboBox" styleClass="edit-field" prefWidth="300"/>
+    </VBox>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button fx:id="saveEditButton" text="Save Changes" styleClass="success-button"/>
+        <Button fx:id="cancelEditButton" text="Cancel" styleClass="danger-button"/>
+    </HBox>
+</VBox>
+
+
+
+
             <!-- Resources View -->
             <VBox fx:id="resourcesView" visible="false">
                 <TableView fx:id="resourcesTable">
@@ -91,37 +190,46 @@
                 </TableView>
                 <Button text="Create Event" onAction="#createEvent"/>
             </VBox>
-       <VBox fx:id="statisticsView" visible="false" spacing="20">
-    <!-- Main content area that will expand -->
-    <VBox styleClass="stats-summary" alignment="CENTER" spacing="10" VBox.vgrow="ALWAYS">
-        <Label fx:id="totalUsersLabel" styleClass="stat-label"/>
-        <Label fx:id="activeReservationsLabel" styleClass="stat-label"/>
-        <Label fx:id="availableResourcesLabel" styleClass="stat-label"/>
-    </VBox>
-    <VBox fx:id="usersView" visible="false">
-    <TableView fx:id="usersTable">
-        <columns>
-            <TableColumn text="Username" fx:id="usernameColumn"/>
-            <TableColumn text="Email" fx:id="emailColumn"/>
-            <TableColumn text="Role" fx:id="roleColumn"/>
-        </columns>
-    </TableView>
-</VBox>
+        <VBox fx:id="statisticsView" visible="false" spacing="20" styleClass="main-content">
+                <!-- Top Stats Cards Row -->
+                <HBox spacing="20" alignment="CENTER">
+                    <VBox styleClass="stat-card">
+                        <Label text="Total Users" styleClass="stat-title"/>
+                        <Label fx:id="totalUsersLabel" styleClass="stat-value"/>
+                    </VBox>
+                    
+                    <VBox styleClass="stat-card">
+                        <Label text="Active Reservations" styleClass="stat-title"/>
+                        <Label fx:id="activeReservationsLabel" styleClass="stat-value"/>
+                    </VBox>
+                    
+                    <VBox styleClass="stat-card">
+                        <Label text="Available Resources" styleClass="stat-title"/>
+                        <Label fx:id="availableResourcesLabel" styleClass="stat-value"/>
+                    </VBox>
+                </HBox>
 
-    
-    <!-- Charts fixed at bottom -->
-    <HBox spacing="50" alignment="CENTER" maxHeight="300" styleClass="charts-container" HBox.hgrow="ALWAYS" >
-        <PieChart fx:id="resourceUsageChart" title="Resource Distribution" 
-                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS"/>
-        <BarChart fx:id="reservationsChart" title="Reservations Status" 
-                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS">
-            <xAxis><CategoryAxis /></xAxis>
-            <yAxis><NumberAxis /></yAxis>
-        </BarChart>
-        <PieChart fx:id="userActivityChart" title="User Activity" 
-                  prefHeight="250" prefWidth="300" HBox.hgrow="ALWAYS"/>
-    </HBox>
-</VBox>
+                <!-- Charts Row -->
+                <HBox spacing="20" VBox.vgrow="ALWAYS">
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS">
+                        <Label text="Resource Distribution" styleClass="card-title"/>
+                        <PieChart fx:id="resourceUsageChart"/>
+                    </VBox>
+                    
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS">
+                        <Label text="Reservations Status" styleClass="card-title"/>
+                        <BarChart fx:id="reservationsChart">
+                            <xAxis><CategoryAxis/></xAxis>
+                            <yAxis><NumberAxis/></yAxis>
+                        </BarChart>
+                    </VBox>
+                    
+                    <VBox styleClass="content-card" HBox.hgrow="ALWAYS">
+                        <Label text="User Activity" styleClass="card-title"/>
+                        <PieChart fx:id="userActivityChart"/>
+                    </VBox>
+                </HBox>
+            </VBox>
 
 
         </StackPane>
