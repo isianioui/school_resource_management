@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.image.*?>
+
+<VBox alignment="CENTER" spacing="15" styleClass="root-container" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.controllers.RegistrationController"
+      maxWidth="Infinity" 
+      maxHeight="Infinity"
+ >
+
+    <ImageView fitHeight="100" fitWidth="100" pickOnBounds="true" preserveRatio="true">
+        <image>
+            <Image url="@../images/logofx1.png"/>
+        </image>
+    </ImageView>
+    <Label text="Register" styleClass="header-label"/>
+    <HBox alignment="CENTER">
+        <TextField fx:id="usernameField" promptText="Username" styleClass="input-field"/>
+    </HBox>
+    <HBox alignment="CENTER">
+        <TextField fx:id="emailField" promptText="Email" styleClass="input-field"/>
+    </HBox>
+    <HBox alignment="CENTER">
+        <PasswordField fx:id="passwordField" promptText="Password" styleClass="input-field"/>
+    </HBox>
+    <HBox alignment="CENTER">
+        <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" styleClass="input-field"/>
+    </HBox>
+    <HBox alignment="CENTER">
+        <Button text="Register" onAction="#handleRegister" styleClass="action-button"/>
+    </HBox>
+    <Hyperlink text="Already have an account? Login" onAction="#goToLogin" styleClass="register-link"/>
+    <Label fx:id="errorLabel" textFill="red"/>
+</VBox>
