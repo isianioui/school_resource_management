@@ -13,6 +13,10 @@ public class Event {
     private Time event_time;
     private String location;
     private int created_by;
+    private String creator_name;
+public String getCreator_name() { return creator_name; }
+public void setCreator_name(String creator_name) { this.creator_name = creator_name; }
+
 
     // Getters and Setters
     public int getEvent_id() { return event_id; }

@@ -30,6 +30,8 @@ public class Resource {
 public String toString() {
     return this.getName();
 }
-
+public boolean isValidCapacity(int capacity) {
+    return capacity > 0;
+}
 }
 

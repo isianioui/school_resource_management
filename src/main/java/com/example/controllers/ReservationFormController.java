@@ -33,7 +33,7 @@ public class ReservationFormController {
 
     @FXML
     public void initialize() {
-        resourceDAO = new ResourceDAO();
+        resourceDAO = new ResourceDAO(null);
         reservationDAO = new ReservationDAO();
         
         loadResources();

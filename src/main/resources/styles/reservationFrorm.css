@@ -1,0 +1,63 @@
+.form-container {
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-min-width: 400px;
+    -fx-max-width: 500px;
+}
+
+.form-title {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 20 0;
+}
+
+.combo-box, .date-picker {
+    -fx-background-color: #f8f9fa;
+    -fx-border-color: #e9ecef;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-min-height: 40px;
+}
+
+.combo-box:hover, .date-picker:hover {
+    -fx-border-color: #4a90e2;
+}
+
+.success-button {
+    -fx-background-color: #28a745;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-width: 100px;
+    -fx-min-height: 35px;
+    -fx-background-radius: 4px;
+}
+
+.danger-button {
+    -fx-background-color: #dc3545;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-min-width: 100px;
+    -fx-min-height: 35px;
+    -fx-background-radius: 4px;
+}
+
+.success-button:hover {
+    -fx-background-color: #218838;
+    -fx-cursor: hand;
+}
+
+.danger-button:hover {
+    -fx-background-color: #c82333;
+    -fx-cursor: hand;
+}
+
+.combo-box .list-cell {
+    -fx-padding: 8 12 8 12;
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent;
+}

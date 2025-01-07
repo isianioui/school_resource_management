@@ -18,15 +18,16 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp; // Add this import at the top
 import java.time.LocalDate;
 
-
 import com.example.models.*;
 import com.example.services.EmailService;
 import com.example.dao.*;
+import com.example.database.databaseConnection;
 
 import java.io.IOException;
 
@@ -134,41 +135,51 @@ public class dashboardController {
     @FXML
     private TableColumn<User, Timestamp> lastLoginColumn;
 
+    @FXML
+    private VBox reservationFormView;
+    @FXML
+    private ComboBox<Resource> resourceComboBox;
+    @FXML
+    private DatePicker datePicker;
+    @FXML
+    private ComboBox<String> timeComboBox;
 
-    @FXML private VBox reservationFormView;
-    @FXML private ComboBox<Resource> resourceComboBox;
-    @FXML private DatePicker datePicker;
-    @FXML private ComboBox<String> timeComboBox;
-
-
-
+    private TableColumn<Resource, String> descriptionColumn;
+    @FXML
+    private ComboBox<String> resourceTypeField;
+    
     @FXML
     public void initialize() {
         initializeDAOs();
         setupTableColumns();
         setupInitialVisibility();
-        reminderColumn.setCellValueFactory(new PropertyValueFactory<>("reminder_sent"));
-
         setupReservationTable();
-        
-
+        Connection conn = databaseConnection.getConnection();
+        resourceDAO = new ResourceDAO(conn);
+        loadResources();
+        reminderColumn.setCellValueFactory(new PropertyValueFactory<>("reminder_sent"));
+        resourceTypeField.setItems(FXCollections.observableArrayList("terrain", "salle"));
+        setupEventTable();
+        refreshEventTable();    
     }
-
+    
     private void initializeDAOs() {
+        Connection conn = databaseConnection.getConnection();
         reservationDAO = new ReservationDAO();
-        resourceDAO = new ResourceDAO();
+        resourceDAO = new ResourceDAO(conn);
         eventDAO = new EventDAO();
         statisticsDAO = new StatisticsDAO();
-        userDAO = new UserDAO(); // Add this line
-
+        userDAO = new UserDAO();
     }
+    
 
-    // private void updateViewVisibility(boolean res, boolean resource, boolean event, boolean stats, boolean users) {
-    //     reservationsView.setVisible(res);
-    //     resourcesView.setVisible(resource);
-    //     eventsView.setVisible(event);
-    //     statisticsView.setVisible(stats);
-    //     usersView.setVisible(users);
+    // private void updateViewVisibility(boolean res, boolean resource, boolean
+    // event, boolean stats, boolean users) {
+    // reservationsView.setVisible(res);
+    // resourcesView.setVisible(resource);
+    // eventsView.setVisible(event);
+    // statisticsView.setVisible(stats);
+    // usersView.setVisible(users);
     // }
 
     private void updateViewVisibility(boolean res, boolean resource, boolean event, boolean stats, boolean users) {
@@ -178,7 +189,7 @@ public class dashboardController {
         eventsView.setVisible(false);
         statisticsView.setVisible(false);
         usersView.setVisible(false);
-    
+
         // Show only the requested view
         reservationsView.setVisible(res);
         resourcesView.setVisible(resource);
@@ -192,6 +203,10 @@ public class dashboardController {
     @FXML
     private void showUsers() {
         updateViewVisibility(false, false, false, false, true);
+        resourceFormView.setVisible(false);
+        reservationFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
 
         // Initialize all columns
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -219,7 +234,9 @@ public class dashboardController {
         ObservableList<User> users = FXCollections.observableArrayList(userDAO.getAllUsers());
         usersTable.setItems(users);
     }
-    @FXML private TableColumn<Reservation, Boolean> reminderColumn;
+
+    @FXML
+    private TableColumn<Reservation, Boolean> reminderColumn;
 
     private void setupTableColumns() {
         // Reservations Table
@@ -259,13 +276,9 @@ public class dashboardController {
         eventsView.setVisible(false);
     }
 
-  
-
-
-
     private void setupUserAccess() {
         boolean isAdmin = currentUser.getRole().equals("admin");
-        
+
         // Keep only the reminder column setup
         reminderColumn.setCellValueFactory(new PropertyValueFactory<>("reminder_sent"));
         reminderColumn.setCellFactory(column -> new TableCell<Reservation, Boolean>() {
@@ -276,11 +289,15 @@ public class dashboardController {
             }
         });
     }
-    
 
     @FXML
     private void showReservations() {
         updateViewVisibility(true, false, false, false, false);
+        resourceFormView.setVisible(false);
+        reservationFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
+
         ObservableList<Reservation> reservations = FXCollections.observableArrayList(
                 reservationDAO.getUserReservations(currentUser.getId(), currentUser.getRole()));
         reservationsTable.setItems(reservations);
@@ -288,6 +305,11 @@ public class dashboardController {
 
     @FXML
     private void showResources() {
+        reservationFormView.setVisible(false);
+        resourceFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
+
         updateViewVisibility(false, true, false, false, false);
         ObservableList<Resource> resources = FXCollections.observableArrayList(
                 resourceDAO.getAllResources());
@@ -296,6 +318,10 @@ public class dashboardController {
 
     @FXML
     private void showEvents() {
+        reservationFormView.setVisible(false);
+        resourceFormView.setVisible(false);
+        eventFormView.setVisible(false);
+
         updateViewVisibility(false, false, true, false, false);
         ObservableList<Event> events = FXCollections.observableArrayList(
                 eventDAO.getAllEvents());
@@ -310,19 +336,28 @@ public class dashboardController {
 
     @FXML
     private void showReports() {
+        reservationFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
+
         updateViewVisibility(false, false, false);
         System.out.println("Loading reports view...");
     }
 
     @FXML
     private void showNotifications() {
+        reservationFormView.setVisible(false);
+        resourceFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
+
         updateViewVisibility(false, false, false);
         System.out.println("Loading notifications view...");
     }
 
     @FXML
     private TableColumn<Reservation, Void> reservationActionsColumn;
-    
+
     private void setupReservationTable() {
         // Setup reminder column
         reminderColumn.setCellValueFactory(new PropertyValueFactory<>("reminder_sent"));
@@ -337,7 +372,7 @@ public class dashboardController {
                 }
             }
         });
-    
+
         // Setup action buttons
         reservationActionsColumn.setCellFactory(column -> new TableCell<Reservation, Void>() {
             private final Button viewButton = new Button("View");
@@ -346,8 +381,9 @@ public class dashboardController {
             private final Button reminderButton = new Button("Send Reminder");
             private final Button confirmButton = new Button("Confirm");
             private final Button cancelButton = new Button("Cancel");
-            private final HBox buttons = new HBox(5, viewButton, editButton, deleteButton, reminderButton, confirmButton, cancelButton);    
-    
+            private final HBox buttons = new HBox(5, viewButton, editButton, deleteButton, reminderButton,
+                    confirmButton, cancelButton);
+
             {
                 viewButton.getStyleClass().add("info-button");
                 editButton.getStyleClass().add("success-button");
@@ -355,13 +391,12 @@ public class dashboardController {
                 reminderButton.getStyleClass().add("info-button");
                 confirmButton.getStyleClass().add("success-button");
                 cancelButton.getStyleClass().add("danger-button");
-    
+
                 viewButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     viewReservationDetails(reservation);
                 });
-                
-    
+
                 editButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     editReservation(reservation);
@@ -370,23 +405,23 @@ public class dashboardController {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     updateReservationStatus(reservation, "confirmed");
                 });
-    
+
                 cancelButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     updateReservationStatus(reservation, "rejected");
                 });
-    
+
                 deleteButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     deleteReservation(reservation);
                 });
-    
+
                 reminderButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     sendReservationReminder(reservation);
                 });
             }
-    
+
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -394,19 +429,17 @@ public class dashboardController {
             }
         });
     }
-    
 
     private void updateReservationStatus(Reservation reservation, String newStatus) {
-    if (reservationDAO.updateReservationStatus(reservation.getReservation_id(), newStatus)) {
-        reservation.setStatus(newStatus);
-        refreshReservationsTable();
+        if (reservationDAO.updateReservationStatus(reservation.getReservation_id(), newStatus)) {
+            reservation.setStatus(newStatus);
+            refreshReservationsTable();
+        }
     }
-}
 
-    
     private void sendReservationReminder(Reservation reservation) {
         System.out.println("Attempting to find user with ID: " + reservation.getUser_id());
-        User user = userDAO.getUserById(reservation.getUser_id());        
+        User user = userDAO.getUserById(reservation.getUser_id());
         if (user == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
@@ -414,83 +447,92 @@ public class dashboardController {
             alert.showAndWait();
             return;
         }
-    
+
         String status = reservation.getStatus();
         String emailSubject = "Reservation Reminder";
         String emailBody = String.format(
-            "Dear %s,\n\nYour reservation for %s on %s at %s is %s.\n\nBest regards,\nResource Management System EST ESSAOUIRA",
-            user.getUsername(),
-            resourceDAO.getResourceById(reservation.getResource_id()).getName(),
-            reservation.getReservation_date(),
-            reservation.getReservation_time(),
-            status
-        );
-    
+                "Dear %s,\n\nYour reservation for %s on %s at %s is %s.\n\nBest regards,\nResource Management System EST ESSAOUIRA",
+                user.getUsername(),
+                resourceDAO.getResourceById(reservation.getResource_id()).getName(),
+                reservation.getReservation_date(),
+                reservation.getReservation_time(),
+                status);
+
         EmailService.sendEmail(user.getEmail(), emailSubject, emailBody);
         reservationDAO.updateReminderStatus(reservation.getReservation_id(), true);
         refreshReservationsTable();
-        
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Reminder Sent");
         alert.setContentText("Reminder email has been sent successfully!");
         alert.showAndWait();
     }
 
-@FXML private VBox reservationDetailsView;
-@FXML private Label reservationIdLabel;
-@FXML private Label resourceNameLabel;
-@FXML private Label resourceTypeLabel;
-@FXML private Label reservedByLabel;
-@FXML private Label reservationDateLabel;
-@FXML private Label reservationTimeLabel;
-@FXML private Label reservationStatusLabel;
-@FXML private Label reminderStatusLabel;
-@FXML private Button backToReservationsButton;
-    
-    
+    @FXML
+    private VBox reservationDetailsView;
+    @FXML
+    private Label reservationIdLabel;
+    @FXML
+    private Label resourceNameLabel;
+    @FXML
+    private Label resourceTypeLabel;
+    @FXML
+    private Label reservedByLabel;
+    @FXML
+    private Label reservationDateLabel;
+    @FXML
+    private Label reservationTimeLabel;
+    @FXML
+    private Label reservationStatusLabel;
+    @FXML
+    private Label reminderStatusLabel;
+    @FXML
+    private Button backToReservationsButton;
+
     // private void viewReservationDetails(Reservation reservation) {
-    //     Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    //     alert.setTitle("Reservation Details");
-    //     alert.setHeaderText("Reservation #" + reservation.getReservation_id());
-        
-    //     // Get resource name from resourceDAO
-    //     Resource resource = resourceDAO.getResourceById(reservation.getResource_id());
-    //     // Get user details from userDAO
-    //     User user = userDAO.getUserById(reservation.getUser_id());
-        
-    //     String content = String.format("""
-    //         Resource: %s
-    //         Type: %s
-    //         Reserved by: %s
-    //         Date: %s
-    //         Time: %s
-    //         Status: %s
-    //         Reminder: %s
-    //         """,
-    //         resource.getName(),
-    //         reservation.getResource_type(),
-    //         user.getUsername(),
-    //         reservation.getReservation_date(),
-    //         reservation.getReservation_time(),
-    //         reservation.getStatus(),
-    //         reservation.getReminder_sent() ? "Sent" : "Not Sent"
-    //     );
-        
-    //     alert.setContentText(content);
-    //     alert.showAndWait();
+    // Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    // alert.setTitle("Reservation Details");
+    // alert.setHeaderText("Reservation #" + reservation.getReservation_id());
+
+    // // Get resource name from resourceDAO
+    // Resource resource =
+    // resourceDAO.getResourceById(reservation.getResource_id());
+    // // Get user details from userDAO
+    // User user = userDAO.getUserById(reservation.getUser_id());
+
+    // String content = String.format("""
+    // Resource: %s
+    // Type: %s
+    // Reserved by: %s
+    // Date: %s
+    // Time: %s
+    // Status: %s
+    // Reminder: %s
+    // """,
+    // resource.getName(),
+    // reservation.getResource_type(),
+    // user.getUsername(),
+    // reservation.getReservation_date(),
+    // reservation.getReservation_time(),
+    // reservation.getStatus(),
+    // reservation.getReminder_sent() ? "Sent" : "Not Sent"
+    // );
+
+    // alert.setContentText(content);
+    // alert.showAndWait();
     // }
 
     private void viewReservationDetails(Reservation reservation) {
         // Hide reservations table view
         reservationsView.setVisible(false);
-        
+
         // Show details view
         reservationDetailsView.setVisible(true);
-        
+
         // Get additional data
         Resource resource = resourceDAO.getResourceById(reservation.getResource_id());
         User user = userDAO.getUserById(reservation.getUser_id());
-        
+
         // Set labels
         reservationIdLabel.setText("Reservation #" + reservation.getReservation_id());
         resourceNameLabel.setText("Resource: " + resource.getName());
@@ -500,128 +542,121 @@ public class dashboardController {
         reservationTimeLabel.setText("Time: " + reservation.getReservation_time());
         reservationStatusLabel.setText("Status: " + reservation.getStatus());
         reminderStatusLabel.setText("Reminder: " + (reservation.getReminder_sent() ? "Sent" : "Not Sent"));
-        
+
         backToReservationsButton.setOnAction(e -> {
             reservationDetailsView.setVisible(false);
             reservationsView.setVisible(true);
         });
     }
-    
-    
-    
-    
+
     // @FXML
     // private void openNewReservationForm() {
-    //     try {
-    //         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/reservationForm.fxml"));
-    //         Parent root = loader.load();
-            
-    //         Stage stage = new Stage();
-    //         stage.setTitle("New Reservation");
-    //         stage.setScene(new Scene(root));
-    //         stage.showAndWait();
-            
-    //         // Refresh table after form closes
-    //         refreshReservationsTable();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
+    // try {
+    // FXMLLoader loader = new
+    // FXMLLoader(getClass().getResource("/views/reservationForm.fxml"));
+    // Parent root = loader.load();
+
+    // Stage stage = new Stage();
+    // stage.setTitle("New Reservation");
+    // stage.setScene(new Scene(root));
+    // stage.showAndWait();
+
+    // // Refresh table after form closes
+    // refreshReservationsTable();
+    // } catch (IOException e) {
+    // e.printStackTrace();
+    // }
     // }
 
+    @FXML
+    private void openNewReservationForm() {
+        reservationsView.setVisible(false);
+        reservationFormView.setVisible(true);
+        loadResources();
+        setupTimeComboBox();
+        setupDatePicker();
+    }
 
+    private void loadResources() {
+        ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
+        resourceComboBox.setItems(resources);
+        resourceComboBox.setPromptText("Select Resource");
+    }
 
-@FXML
-private void openNewReservationForm() {
-    reservationsView.setVisible(false);
-    reservationFormView.setVisible(true);
-    loadResources();
-    setupTimeComboBox();
-    setupDatePicker();
-}
+    private void setupTimeComboBox() {
+        ObservableList<String> times = FXCollections.observableArrayList(
+                "08:00", "09:00", "10:00", "11:00", "12:00",
+                "13:00", "14:00", "15:00", "16:00", "17:00");
+        timeComboBox.setItems(times);
+        timeComboBox.setPromptText("Select Time");
+    }
 
-private void loadResources() {
-    ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
-    resourceComboBox.setItems(resources);
-    resourceComboBox.setPromptText("Select Resource");
-}
+    private void setupDatePicker() {
+        datePicker.setValue(LocalDate.now());
+        datePicker.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                setDisabled(empty || date.compareTo(LocalDate.now()) < 0);
+            }
+        });
+    }
 
-private void setupTimeComboBox() {
-    ObservableList<String> times = FXCollections.observableArrayList(
-        "08:00", "09:00", "10:00", "11:00", "12:00", 
-        "13:00", "14:00", "15:00", "16:00", "17:00"
-    );
-    timeComboBox.setItems(times);
-    timeComboBox.setPromptText("Select Time");
-}
+    @FXML
+    private void handleBack() {
+        reservationFormView.setVisible(false);
+        reservationsView.setVisible(true);
+        refreshReservationsTable();
+    }
 
-private void setupDatePicker() {
-    datePicker.setValue(LocalDate.now());
-    datePicker.setDayCellFactory(picker -> new DateCell() {
-        @Override
-        public void updateItem(LocalDate date, boolean empty) {
-            super.updateItem(date, empty);
-            setDisabled(empty || date.compareTo(LocalDate.now()) < 0);
-        }
-    });
-}
-
-
-@FXML
-private void handleBack() {
-    reservationFormView.setVisible(false);
-    reservationsView.setVisible(true);
-    refreshReservationsTable();
-}
-
-    
     // private void editReservation(Reservation reservation) {
-    //     try {
-    //         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/reservationForm.fxml"));
-    //         Parent root = loader.load();
-            
-    //         ReservationFormController controller = loader.getController();
-    //         controller.setReservation(reservation);
-            
-    //         Stage stage = new Stage();
-    //         stage.setTitle("Edit Reservation");
-    //         stage.setScene(new Scene(root));
-    //         stage.showAndWait();
-            
-    //         refreshReservationsTable();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     }
+    // try {
+    // FXMLLoader loader = new
+    // FXMLLoader(getClass().getResource("/views/reservationForm.fxml"));
+    // Parent root = loader.load();
+
+    // ReservationFormController controller = loader.getController();
+    // controller.setReservation(reservation);
+
+    // Stage stage = new Stage();
+    // stage.setTitle("Edit Reservation");
+    // stage.setScene(new Scene(root));
+    // stage.showAndWait();
+
+    // refreshReservationsTable();
+    // } catch (IOException e) {
+    // e.printStackTrace();
     // }
-    
+    // }
+
     private void deleteReservation(Reservation reservation) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Reservation");
         alert.setContentText("Are you sure you want to delete this reservation?");
-        
+
         if (alert.showAndWait().get() == ButtonType.OK) {
             if (reservationDAO.deleteReservation(reservation.getReservation_id())) {
                 refreshReservationsTable();
             }
         }
     }
-    
+
     private void refreshReservationsTable() {
         // ObservableList<Reservation> reservations = FXCollections.observableArrayList(
-        //     reservationDAO.getUserReservations(currentUser.getId(), currentUser.getRole())
+        // reservationDAO.getUserReservations(currentUser.getId(),
+        // currentUser.getRole())
         // );
         // reservationsTable.setItems(reservations);
 
         ObservableList<Reservation> reservations = FXCollections.observableArrayList(
-        reservationDAO.getUserReservations(currentUser.getId(), currentUser.getRole())
-    );
-    // Add debug print
-    for (Reservation res : reservations) {
-        System.out.println("Reservation ID: " + res.getReservation_id() + 
-                         " Reminder Status: " + res.getReminder_sent());
+                reservationDAO.getUserReservations(currentUser.getId(), currentUser.getRole()));
+        // Add debug print
+        for (Reservation res : reservations) {
+            System.out.println("Reservation ID: " + res.getReservation_id() +
+                    " Reminder Status: " + res.getReminder_sent());
+        }
+        reservationsTable.setItems(reservations);
     }
-    reservationsTable.setItems(reservations);
-    }
-    
 
     @FXML
     private void createEvent() {
@@ -702,73 +737,75 @@ private void handleBack() {
     }
 
     // public void setUser(User user) {
-    //     this.currentUser = user;
-    //     userNameLabel.setText("Welcome, " + user.getUsername());
-    //     setupUserAccess();
+    // this.currentUser = user;
+    // userNameLabel.setText("Welcome, " + user.getUsername());
+    // setupUserAccess();
 
-    //     if (user.getRole().equals("admin")) {
-    //         updateViewVisibility(false, false, false, true);
-    //         loadAdminDashboard();
-    //     } else {
-    //         updateViewVisibility(true, false, false, false);
-    //         showReservations();
-    //     }
+    // if (user.getRole().equals("admin")) {
+    // updateViewVisibility(false, false, false, true);
+    // loadAdminDashboard();
+    // } else {
+    // updateViewVisibility(true, false, false, false);
+    // showReservations();
+    // }
     // }
 
     public void setUser(User user) {
         this.currentUser = user;
         userNameLabel.setText("Welcome, " + user.getUsername());
-        
+
         // Update UI based on user role without button visibility checks
         boolean isAdmin = user.getRole().equals("admin");
-        // Add any other role-specific UI updates here that don't involve the removed buttons
-        
+        // Add any other role-specific UI updates here that don't involve the removed
+        // buttons
+
         loadUserData(); // If you have this method
         setupUserAccess(); // Now this will only handle the reminder column
         showDashboard();
 
     }
-    
-
 
     // @FXML
     // private void showDashboard() {
-    //     if (currentUser.getRole().equals("admin")) {
-    //         // Hide all other views first
-    //         usersView.setVisible(false);
-    //         reservationsView.setVisible(false);
-    //         resourcesView.setVisible(false);
-    //         eventsView.setVisible(false);
+    // if (currentUser.getRole().equals("admin")) {
+    // // Hide all other views first
+    // usersView.setVisible(false);
+    // reservationsView.setVisible(false);
+    // resourcesView.setVisible(false);
+    // eventsView.setVisible(false);
 
-    //         // Show statistics view and load dashboard data
-    //         statisticsView.setVisible(true);
-    //         loadAdminDashboard();
-    //     }
+    // // Show statistics view and load dashboard data
+    // statisticsView.setVisible(true);
+    // loadAdminDashboard();
+    // }
     // }
 
-    
-// @FXML
-// private void showDashboard() {
-//     if (currentUser.getRole().equals("admin")) {
-//         updateViewVisibility(false, false, false, true, false);
-//         loadAdminDashboard();
-//     }
-// }
-@FXML
-private void showDashboard() {
-    // Hide all other views first
-    usersView.setVisible(false);
-    reservationsView.setVisible(false);
-    resourcesView.setVisible(false);
-    eventsView.setVisible(false);
-    
-    // Show statistics view for all users
-    statisticsView.setVisible(true);
-    
- // Load dashboard data using the existing loadAdminDashboard method
- loadAdminDashboard();
-}
+    // @FXML
+    // private void showDashboard() {
+    // if (currentUser.getRole().equals("admin")) {
+    // updateViewVisibility(false, false, false, true, false);
+    // loadAdminDashboard();
+    // }
+    // }
+    @FXML
+    private void showDashboard() {
+        // Hide all other views first
+        usersView.setVisible(false);
+        reservationsView.setVisible(false);
+        resourcesView.setVisible(false);
+        eventsView.setVisible(false);
+        resourceFormView.setVisible(false);
+        reservationFormView.setVisible(false);
+        eventsView.setVisible(false);
+        eventFormView.setVisible(false);
 
+
+        // Show statistics view for all users
+        statisticsView.setVisible(true);
+
+        // Load dashboard data using the existing loadAdminDashboard method
+        loadAdminDashboard();
+    }
 
     @FXML
     private TableColumn<User, Boolean> accountStatusColumn;
@@ -860,6 +897,7 @@ private void showDashboard() {
         // Implement notification functionality
         System.out.println("Notifications clicked");
     }
+
     @FXML
     private void handleSave() {
         if (validateInputs()) {
@@ -867,7 +905,7 @@ private void showDashboard() {
             Resource selectedResource = resourceComboBox.getValue();
             System.out.println("Selected Resource ID: " + selectedResource.getResource_id());
             System.out.println("Selected Resource Name: " + selectedResource.getName());
-            
+
             reservation.setResource_id(selectedResource.getResource_id());
             reservation.setResource_type(selectedResource.getResource_type()); // Add this line
 
@@ -875,10 +913,10 @@ private void showDashboard() {
             reservation.setReservation_date(Date.valueOf(datePicker.getValue()));
             reservation.setReservation_time(Time.valueOf(timeComboBox.getValue() + ":00"));
             reservation.setStatus("pending");
-            
+
             boolean success = reservationDAO.createReservation(reservation);
             System.out.println("Reservation creation success: " + success);
-            
+
             if (success) {
                 reservationFormView.setVisible(false);
                 reservationsView.setVisible(true);
@@ -886,80 +924,238 @@ private void showDashboard() {
             }
         }
     }
-    
-    
-private boolean validateInputs() {
-    if (resourceComboBox.getValue() == null) {
-        showAlert("Please select a resource");
-        return false;
+
+    private boolean validateInputs() {
+        if (resourceComboBox.getValue() == null) {
+            showAlert("Please select a resource");
+            return false;
+        }
+        if (datePicker.getValue() == null) {
+            showAlert("Please select a date");
+            return false;
+        }
+        if (timeComboBox.getValue() == null) {
+            showAlert("Please select a time");
+            return false;
+        }
+        return true;
     }
-    if (datePicker.getValue() == null) {
-        showAlert("Please select a date");
-        return false;
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
-    if (timeComboBox.getValue() == null) {
-        showAlert("Please select a time");
-        return false;
+
+    @FXML
+    private VBox reservationEditView;
+    @FXML
+    private ComboBox<Resource> editResourceComboBox;
+    @FXML
+    private DatePicker editDatePicker;
+    @FXML
+    private TextField editTimeField; // Changed to TextField
+    @FXML
+    private ComboBox<String> editStatusComboBox;
+    @FXML
+    private Button saveEditButton;
+    @FXML
+    private Button cancelEditButton;
+
+    private void editReservation(Reservation reservation) {
+        reservationsView.setVisible(false);
+        reservationEditView.setVisible(true);
+
+        // Load resources
+        ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
+        editResourceComboBox.setItems(resources);
+        editResourceComboBox.setPromptText("Select Resource");
+        editResourceComboBox.setValue(resourceDAO.getResourceById(reservation.getResource_id()));
+
+        // Set date
+        editDatePicker.setValue(reservation.getReservation_date().toLocalDate());
+
+        // Set time in text field
+        editTimeField.setText(reservation.getReservation_time().toString().substring(0, 5));
+        editTimeField.setPromptText("Enter time (HH:mm)");
+
+        // Set status options
+        editStatusComboBox.setItems(FXCollections.observableArrayList("pending", "confirmed", "rejected"));
+        editStatusComboBox.setValue(reservation.getStatus());
+
+        saveEditButton.setOnAction(e -> {
+            updateReservation(reservation);
+            reservationEditView.setVisible(false);
+            reservationsView.setVisible(true);
+            refreshReservationsTable();
+        });
+
+        cancelEditButton.setOnAction(e -> {
+            reservationEditView.setVisible(false);
+            reservationsView.setVisible(true);
+        });
     }
-    return true;
+
+    private void updateReservation(Reservation reservation) {
+        reservation.setResource_id(editResourceComboBox.getValue().getResource_id());
+        reservation.setReservation_date(Date.valueOf(editDatePicker.getValue()));
+        reservation.setReservation_time(Time.valueOf(editTimeField.getText() + ":00"));
+        reservation.setStatus(editStatusComboBox.getValue());
+
+        reservationDAO.updateReservation(reservation);
+    }
+
+// resources upadates 
+
+@FXML
+private VBox resourceFormView;
+
+@FXML
+private TextField resourceNameField;
+
+
+
+@FXML
+private TextArea descriptionField;
+
+@FXML
+private TextField capacityField;
+
+
+@FXML
+private void openNewResourceForm() {
+    resourceFormView.setVisible(true);
+    resourcesView.setVisible(false);
 }
 
-private void showAlert(String message) {
-    Alert alert = new Alert(Alert.AlertType.ERROR);
-    alert.setTitle("Error");
-    alert.setContentText(message);
-    alert.showAndWait();
+@FXML
+private void handleSaveResource() {
+    Resource newResource = new Resource();
+    newResource.setName(resourceNameField.getText());
+    newResource.setResource_type(resourceTypeField.getValue());
+    newResource.setDescription(descriptionField.getText());
+   
+    int capacity = Integer.parseInt(capacityField.getText());
+    if (newResource.isValidCapacity(capacity)) {
+        newResource.setCapacity(capacity);
+        newResource.setAvailability(true);
+       
+        if(resourceDAO.createResource(newResource)) {
+            refreshResourceTable();
+            resourceFormView.setVisible(false);
+            resourcesView.setVisible(true);
+            clearResourceForm();
+        }
+    }
 }
 
-@FXML private VBox reservationEditView;
-@FXML private ComboBox<Resource> editResourceComboBox;
-@FXML private DatePicker editDatePicker;
-@FXML private TextField editTimeField;  // Changed to TextField
-@FXML private ComboBox<String> editStatusComboBox;
-@FXML private Button saveEditButton;
-@FXML private Button cancelEditButton;
-
-private void editReservation(Reservation reservation) {
-    reservationsView.setVisible(false);
-    reservationEditView.setVisible(true);
-    
-    // Load resources
+private void refreshResourceTable() {
     ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
-    editResourceComboBox.setItems(resources);
-    editResourceComboBox.setPromptText("Select Resource");
-    editResourceComboBox.setValue(resourceDAO.getResourceById(reservation.getResource_id()));
-    
-    // Set date
-    editDatePicker.setValue(reservation.getReservation_date().toLocalDate());
-    
-    // Set time in text field
-    editTimeField.setText(reservation.getReservation_time().toString().substring(0, 5));
-    editTimeField.setPromptText("Enter time (HH:mm)");
-    
-    // Set status options
-    editStatusComboBox.setItems(FXCollections.observableArrayList("pending", "confirmed", "rejected"));
-    editStatusComboBox.setValue(reservation.getStatus());
-    
-    saveEditButton.setOnAction(e -> {
-        updateReservation(reservation);
-        reservationEditView.setVisible(false);
-        reservationsView.setVisible(true);
-        refreshReservationsTable();
-    });
-    
-    cancelEditButton.setOnAction(e -> {
-        reservationEditView.setVisible(false);
-        reservationsView.setVisible(true);
-    });
+    resourcesTable.setItems(resources);
 }
-private void updateReservation(Reservation reservation) {
-    reservation.setResource_id(editResourceComboBox.getValue().getResource_id());
-    reservation.setReservation_date(Date.valueOf(editDatePicker.getValue()));
-    reservation.setReservation_time(Time.valueOf(editTimeField.getText() + ":00"));
-    reservation.setStatus(editStatusComboBox.getValue());
-    
-    reservationDAO.updateReservation(reservation);
+
+private void clearResourceForm() {
+    resourceNameField.clear();
+    resourceTypeField.setValue(null);
+
+    descriptionField.clear();
+    capacityField.clear();
 }
+@FXML
+private void handleBackToResources() {
+    resourceFormView.setVisible(false);
+    resourcesView.setVisible(true);
+}
+
+// events methods
+@FXML
+private TableColumn<Event, String> eventDescriptionColumn;
+@FXML
+private TableColumn<Event, Time> eventTimeColumn;
+
+
+@FXML
+private VBox eventFormView;
+@FXML
+private TextField eventNameField;
+@FXML
+private TextArea eventDescriptionField;
+@FXML
+private DatePicker eventDatePicker;
+@FXML
+private TextField eventTimeField;
+@FXML
+private TextField eventLocationField;
+
+@FXML
+private void openNewEventForm() {
+    eventFormView.setVisible(true);
+    eventsView.setVisible(false);
+}
+
+@FXML
+private void handleSaveEvent() {
+    try {
+        Event newEvent = new Event();
+        newEvent.setName(eventNameField.getText());
+        newEvent.setDescription(eventDescriptionField.getText());
+        newEvent.setEvent_date(Date.valueOf(eventDatePicker.getValue()));
+        newEvent.setEvent_time(Time.valueOf(eventTimeField.getText() + ":00"));
+        newEvent.setLocation(eventLocationField.getText());
+        newEvent.setCreated_by(currentUser.getId());  // Keep as ID for database storage
+
+        if(eventDAO.createEvent(newEvent)) {
+            refreshEventTable();
+            eventFormView.setVisible(false);
+            eventsView.setVisible(true);
+            clearEventForm();
+        }
+    } catch (Exception e) {
+        showAlert("Please enter time in HH:mm format (e.g., 14:30)");
+    }
+}
+
+
+private void refreshEventTable() {
+    ObservableList<Event> events = FXCollections.observableArrayList(eventDAO.getAllEvents());
+    eventsTable.setItems(events);
+}
+
+private void clearEventForm() {
+    eventNameField.clear();
+    eventDescriptionField.clear();
+    eventDatePicker.setValue(null);
+    eventTimeField.clear();
+    eventLocationField.clear();
+}
+
+@FXML
+private void handleBackToEvents() {
+    eventFormView.setVisible(false);
+    eventsView.setVisible(true);
+}
+
+@FXML
+private TableColumn<Event, Integer> createdByColumn;
+
+private void setupEventTable() {
+    eventNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+    eventDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+    eventDateColumn.setCellValueFactory(new PropertyValueFactory<>("event_date"));
+    eventTimeColumn.setCellValueFactory(new PropertyValueFactory<>("event_time"));
+    locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
+    createdByColumn.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
+
+    // Force table refresh
+    eventsTable.refresh();
+}
+
+
+
+
+
+
 
 
 

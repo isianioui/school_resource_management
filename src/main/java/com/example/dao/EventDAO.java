@@ -54,10 +54,13 @@ public class EventDAO {
 
     public List<Event> getAllEvents() {
         List<Event> events = new ArrayList<>();
-        String query = "SELECT event_id, name, description, event_date, event_time, location, created_by FROM Events";
+        String query = "SELECT e.event_id, e.name, e.description, e.event_date, e.event_time, e.location, e.created_by, u.username as creator_name " +
+                       "FROM Events e " +
+                       "JOIN Users u ON e.created_by = u.user_id";
         
-        try (Connection conn = databaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(query);
+        connection = databaseConnection.getConnection();
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
@@ -69,6 +72,7 @@ public class EventDAO {
                 event.setEvent_time(rs.getTime("event_time"));
                 event.setLocation(rs.getString("location"));
                 event.setCreated_by(rs.getInt("created_by"));
+                event.setCreator_name(rs.getString("creator_name"));
                 events.add(event);
             }
         } catch (SQLException e) {
@@ -76,4 +80,26 @@ public class EventDAO {
         }
         return events;
     }
+    
+    
+
+    public boolean createEvent(Event event) {
+        String sql = "INSERT INTO Events (name, description, event_date, event_time, location, created_by) VALUES (?, ?, ?, ?, ?, ?)";
+        
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            pstmt.setString(1, event.getName());
+            pstmt.setString(2, event.getDescription());
+            pstmt.setDate(3, event.getEvent_date());
+            pstmt.setTime(4, event.getEvent_time());
+            pstmt.setString(5, event.getLocation());
+            pstmt.setInt(6, event.getCreated_by());
+            
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            System.err.println("Error creating event: " + e.getMessage());
+            return false;
+        }
+    }
+    
 }

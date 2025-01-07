@@ -15,8 +15,11 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
-
 <?import javafx.scene.control.TextField?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.collections.FXCollections?>
+<?import java.lang.String?>
 
 
 
@@ -169,27 +172,83 @@
 
             <!-- Resources View -->
             <VBox fx:id="resourcesView" visible="false">
+              <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="New Resource" onAction="#openNewResourceForm" styleClass="success-button"/>
+    </HBox>
                 <TableView fx:id="resourcesTable">
                     <columns>
-                        <TableColumn text="Name" fx:id="resourceNameColumn"/>
-                        <TableColumn text="Type" fx:id="typeColumn"/>
-                        <TableColumn text="Capacity" fx:id="capacityColumn"/>
-                        <TableColumn text="Available" fx:id="availabilityColumn"/>
+                        <TableColumn text="Name" fx:id="resourceNameColumn" prefWidth="${usersTable.width * 0.245}"/>
+                        <TableColumn text="Type" fx:id="typeColumn" prefWidth="${usersTable.width * 0.245}"/>
+                        <TableColumn text="Capacity" fx:id="capacityColumn" prefWidth="${usersTable.width * 0.245}"/>
+                        <TableColumn text="Available" fx:id="availabilityColumn" prefWidth="${usersTable.width * 0.245}"/>
                     </columns>
                 </TableView>
             </VBox>
-            
+            <VBox fx:id="resourceFormView" visible="false" spacing="15" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="New Resource" styleClass="form-title"/>
+    <TextField fx:id="resourceNameField" promptText="Resource Name" maxWidth="300"/>
+<ComboBox fx:id="resourceTypeField" promptText="Select Type" maxWidth="300">
+    <items>
+        <FXCollections fx:factory="observableArrayList">
+            <String fx:value="terrain" />
+            <String fx:value="salle" />
+        </FXCollections>
+    </items>
+</ComboBox>
+    <TextArea fx:id="descriptionField" promptText="Description" maxWidth="300" wrapText="true"/>
+    <TextField fx:id="capacityField" promptText="Capacity" maxWidth="300"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Save" onAction="#handleSaveResource" styleClass="success-button"/>
+        <Button text="Back" onAction="#handleBackToResources" styleClass="danger-button"/>
+    </HBox>
+</VBox>
+
             <!-- Events View -->
-            <VBox fx:id="eventsView" visible="false">
-                <TableView fx:id="eventsTable">
-                    <columns>
-                        <TableColumn text="Name" fx:id="eventNameColumn"/>
-                        <TableColumn text="Date" fx:id="eventDateColumn"/>
-                        <TableColumn text="Location" fx:id="locationColumn"/>
-                    </columns>
-                </TableView>
-                <Button text="Create Event" onAction="#createEvent"/>
-            </VBox>
+  <VBox fx:id="eventsView" visible="false" spacing="10" VBox.vgrow="ALWAYS">
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="New Event" onAction="#openNewEventForm" styleClass="success-button"/>
+    </HBox>
+    <TableView fx:id="eventsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="Name" fx:id="eventNameColumn" prefWidth="200"/>
+            <TableColumn text="Description" fx:id="eventDescriptionColumn" prefWidth="300"/>
+            <TableColumn text="Date" fx:id="eventDateColumn" prefWidth="150"/>
+            <TableColumn text="Time" fx:id="eventTimeColumn" prefWidth="150"/>
+            <TableColumn text="Location" fx:id="locationColumn" prefWidth="200"/>
+            <TableColumn text="Created By" fx:id="createdByColumn" prefWidth="150"/>
+
+
+        </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+        </columnResizePolicy>
+    </TableView>
+</VBox>
+
+
+<VBox fx:id="eventFormView" visible="false" spacing="15" styleClass="resource-form" maxWidth="500" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="New Event" styleClass="form-title"/>
+    <TextField fx:id="eventNameField" promptText="Event Name" maxWidth="300"/>
+    <TextArea fx:id="eventDescriptionField" promptText="Description" maxWidth="300" wrapText="true"/>
+    <DatePicker fx:id="eventDatePicker" promptText="Select Date" maxWidth="300"/>
+<TextField fx:id="eventTimeField" promptText="Enter time (HH:mm)" maxWidth="300"/>
+    <TextField fx:id="eventLocationField" promptText="Location" maxWidth="300"/>
+    
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Save" onAction="#handleSaveEvent" styleClass="success-button"/>
+        <Button text="Back" onAction="#handleBackToEvents" styleClass="danger-button"/>
+    </HBox>
+</VBox>
+
         <VBox fx:id="statisticsView" visible="false" spacing="20" styleClass="main-content">
                 <!-- Top Stats Cards Row -->
                 <HBox spacing="20" alignment="CENTER">
