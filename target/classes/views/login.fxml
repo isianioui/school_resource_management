@@ -8,7 +8,7 @@
 <VBox alignment="CENTER" spacing="15" styleClass="root-container" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.example.controllers.LoginController">
     <ImageView fitHeight="150" fitWidth="150" pickOnBounds="true" preserveRatio="true">
         <image>
-            <Image url="@../images/logofx1.png"/>
+            <Image url="@../images/logo1.png"/>
         </image>
     </ImageView>
     <Label text="Login" styleClass="header-label"/>

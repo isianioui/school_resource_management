@@ -293,6 +293,18 @@
                 </HBox>
             </VBox>
 
+<VBox fx:id="reportsView" visible="false">
+    <TableView fx:id="reportsTable">
+        <columns>
+            <TableColumn fx:id="reportTitleColumn" text="Title" prefWidth="${reportsTable.width * 0.245}"/>
+            <TableColumn fx:id="reportDescriptionColumn" text="Description" prefWidth="${reportsTable.width * 0.245}"/>
+            <TableColumn fx:id="reportDateColumn" text="Upload Date" prefWidth="${reportsTable.width * 0.245}"/>
+            <TableColumn fx:id="reportActionsColumn" text="Actions" prefWidth="${reportsTable.width * 0.245}"/>
+        </columns>
+    </TableView>
+    <Button fx:id="uploadReportButton" text="Upload New Report" onAction="#showUploadReportForm"/>
+</VBox>
+
 
         </StackPane>
     </center>

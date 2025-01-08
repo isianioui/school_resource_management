@@ -10,15 +10,18 @@ import javafx.scene.chart.PieChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-
+import java.util.Optional;
+import java.awt.Desktop;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Time;
@@ -30,6 +33,7 @@ import com.example.services.EmailService;
 import com.example.dao.*;
 import com.example.database.databaseConnection;
 
+import java.io.File;
 import java.io.IOException;
 
 public class dashboardController {
@@ -159,6 +163,17 @@ public class dashboardController {
     private Button newEventButton;
 
     @FXML
+private TableView<Report> reportsTable;
+@FXML
+private TableColumn<Report, String> reportTitleColumn;
+@FXML
+private TableColumn<Report, String> reportDescriptionColumn;
+@FXML
+private TableColumn<Report, Timestamp> reportDateColumn;
+@FXML
+private TableColumn<Report, Void> reportActionsColumn;
+
+    @FXML
     public void initialize() {
 
         initializeDAOs();
@@ -172,6 +187,11 @@ public class dashboardController {
         resourceTypeField.setItems(FXCollections.observableArrayList("terrain", "salle"));
         setupEventTable();
         refreshEventTable();
+          reportTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+    reportDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description")); 
+    reportDateColumn.setCellValueFactory(new PropertyValueFactory<>("uploadDate"));
+    setupReportActionsColumn();
+    reportDAO = new ReportDAO(conn);
 
     }
 
@@ -399,14 +419,24 @@ public class dashboardController {
     }
 
     @FXML
+private VBox reportsView;
+
+
+    @FXML
     private void showReports() {
+        // Hide other views
         reservationFormView.setVisible(false);
         eventsView.setVisible(false);
         eventFormView.setVisible(false);
-
-        updateViewVisibility(false, false, false);
-        System.out.println("Loading reports view...");
+        
+        // Show reports view
+        updateViewVisibility(false, false, false, true, false);
+        reportsView.setVisible(true);
+        
+        // Refresh the reports table
+        refreshReportsTable();
     }
+    
 
     @FXML
     private void showNotifications() {
@@ -1219,6 +1249,127 @@ public class dashboardController {
         eventsTable.refresh();
     }
 
-    // report
+    // report part
+    private ReportDAO reportDAO;
+
+
+    @FXML
+private void showUploadReportForm() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.getExtensionFilters().addAll(
+        new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
+        new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
+    );
+    
+    File selectedFile = fileChooser.showOpenDialog(null);
+    if (selectedFile != null) {
+        Dialog<Report> dialog = new Dialog<>();
+        dialog.setTitle("Upload Report");
+        
+        GridPane grid = new GridPane();
+        TextField titleField = new TextField();
+        TextArea descriptionArea = new TextArea();
+        CheckBox isPublicCheck = new CheckBox("Make Public");
+        
+        grid.add(new Label("Title:"), 0, 0);
+        grid.add(titleField, 1, 0);
+        grid.add(new Label("Description:"), 0, 1);
+        grid.add(descriptionArea, 1, 1);
+        grid.add(isPublicCheck, 1, 2);
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        
+        dialog.setResultConverter(buttonType -> {
+            if (buttonType == ButtonType.OK) {
+                Report report = new Report();
+                report.setTitle(titleField.getText());
+                report.setDescription(descriptionArea.getText());
+                report.setFileType(selectedFile.getName().substring(selectedFile.getName().lastIndexOf(".") + 1));
+                report.setUploadedBy(currentUser.getId());
+                report.setPublic(isPublicCheck.isSelected());
+                return report;
+            }
+            return null;
+        });
+        
+        Optional<Report> result = dialog.showAndWait();
+        result.ifPresent(report -> {
+            if (reportDAO.uploadReport(report, selectedFile)) {
+                refreshReportsTable();
+            }
+        });
+    }
+}
+
+private void refreshReportsTable() {
+    ObservableList<Report> reports = FXCollections.observableArrayList(reportDAO.getAllReports());
+    reportsTable.setItems(reports);
+}
+
+@FXML
+private void viewReport(Report report) {
+    try {
+        File file = new File("reports/" + report.getFilePath());
+        Desktop.getDesktop().open(file);
+    } catch (IOException e) {
+        e.printStackTrace();
+        showAlert("Error opening file");
+    }
+}
+
+private void setupReportActionsColumn() {
+    reportActionsColumn.setCellFactory(column -> new TableCell<Report, Void>() {
+        private final Button viewButton = new Button("View");
+        private final Button deleteButton = new Button("Delete");
+        private final HBox buttons = new HBox(5, viewButton, deleteButton);
+
+        {
+            viewButton.getStyleClass().add("info-button");
+            deleteButton.getStyleClass().add("danger-button");
+
+            // Only show delete button for admin or report owner
+            deleteButton.setVisible(false);
+
+            viewButton.setOnAction(event -> {
+                Report report = getTableView().getItems().get(getIndex());
+                viewReport(report);
+            });
+
+            deleteButton.setOnAction(event -> {
+                Report report = getTableView().getItems().get(getIndex());
+                if (currentUser.getRole().equals("admin") || 
+                    report.getUploadedBy() == currentUser.getId()) {
+                    deleteReport(report);
+                }
+            });
+        }
+
+        @Override
+        protected void updateItem(Void item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setGraphic(null);
+            } else {
+                Report report = getTableView().getItems().get(getIndex());
+                deleteButton.setVisible(currentUser.getRole().equals("admin") || 
+                                     report.getUploadedBy() == currentUser.getId());
+                setGraphic(buttons);
+            }
+        }
+    });
+}
+private void deleteReport(Report report) {
+    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+    alert.setTitle("Delete Report");
+    alert.setContentText("Are you sure you want to delete this report?");
+
+    if (alert.showAndWait().get() == ButtonType.OK) {
+        if (reportDAO.deleteReport(report.getReportId())) {
+            refreshReportsTable();
+        }
+    }
+}
+
 
 }

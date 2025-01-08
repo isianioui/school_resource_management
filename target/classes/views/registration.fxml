@@ -12,7 +12,7 @@
 
     <ImageView fitHeight="100" fitWidth="100" pickOnBounds="true" preserveRatio="true">
         <image>
-            <Image url="@../images/logofx1.png"/>
+            <Image url="@../images/logo1.png"/>
         </image>
     </ImageView>
     <Label text="Register" styleClass="header-label"/>
