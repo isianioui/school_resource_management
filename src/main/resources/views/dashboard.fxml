@@ -51,7 +51,7 @@
      <left>
         <VBox styleClass="sidebar" VBox.vgrow="ALWAYS">
             <Button text="Dashboard" onAction="#showDashboard" styleClass="nav-button"/>
-            <Button text="Users" onAction="#showUsers" styleClass="nav-button"/>
+<Button fx:id="usersButton" text="Users" onAction="#showUsers" styleClass="nav-button"/>
             <Button text="Reservations" onAction="#showReservations" styleClass="nav-button"/>
             <Button text="Resources" onAction="#showResources" styleClass="nav-button"/>
             <Button text="Events" onAction="#showEvents" styleClass="nav-button"/>
@@ -83,7 +83,7 @@
 </VBox>
 <VBox fx:id="reservationsView" visible="false" spacing="10">
     <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="New Reservation" onAction="#openNewReservationForm" styleClass="success-button"/>
+        <Button fx:id="newReservationButton" text="New Reservation" onAction="#openNewReservationForm" styleClass="success-button"/>
     </HBox>
     <TableView fx:id="reservationsTable" VBox.vgrow="ALWAYS">
     <columnResizePolicy>
@@ -173,7 +173,7 @@
             <!-- Resources View -->
             <VBox fx:id="resourcesView" visible="false">
               <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="New Resource" onAction="#openNewResourceForm" styleClass="success-button"/>
+        <Button fx:id="newResourceButton" text="New Resource" onAction="#openNewResourceForm" styleClass="success-button"/>
     </HBox>
                 <TableView fx:id="resourcesTable">
                     <columns>
@@ -211,7 +211,7 @@
             <!-- Events View -->
   <VBox fx:id="eventsView" visible="false" spacing="10" VBox.vgrow="ALWAYS">
     <HBox spacing="10" alignment="CENTER_RIGHT">
-        <Button text="New Event" onAction="#openNewEventForm" styleClass="success-button"/>
+        <Button fx:id="newEventButton" text="New Event" onAction="#openNewEventForm" styleClass="success-button"/>
     </HBox>
     <TableView fx:id="eventsTable" VBox.vgrow="ALWAYS">
         <columns>

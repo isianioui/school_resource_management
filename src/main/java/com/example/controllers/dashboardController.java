@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -148,8 +149,19 @@ public class dashboardController {
     @FXML
     private ComboBox<String> resourceTypeField;
     
+    private String userRole;
+
+    @FXML
+    private Button newReservationButton;
+    @FXML
+    private Button newResourceButton;
+    @FXML
+private Button newEventButton;
+
+
     @FXML
     public void initialize() {
+       
         initializeDAOs();
         setupTableColumns();
         setupInitialVisibility();
@@ -161,7 +173,51 @@ public class dashboardController {
         resourceTypeField.setItems(FXCollections.observableArrayList("terrain", "salle"));
         setupEventTable();
         refreshEventTable();    
+
     }
+   
+    private void hideButtonsForNonAdmin() {
+        Platform.runLater(() -> {
+            if (!"admin".equals(userRole)) {
+                // Hide all buttons immediately
+                usersButton.setVisible(false);
+                usersButton.setManaged(false);
+                
+                // Make sure these buttons exist in your FXML with correct fx:id
+                if (newReservationButton != null) {
+                    newReservationButton.setVisible(false);
+                    newReservationButton.setManaged(false);
+                }
+                
+                if (newResourceButton != null) {
+                    newResourceButton.setVisible(false);
+                    newResourceButton.setManaged(false);
+                }
+                
+                if (newEventButton != null) {
+                    newEventButton.setVisible(false);
+                    newEventButton.setManaged(false);
+                }
+            }
+        });
+    }
+    public void setUserRole(String role) {
+        this.userRole = role;
+        Platform.runLater(() -> {
+            if (!"admin".equals(userRole)) {
+                usersButton.setVisible(false);
+                usersButton.setManaged(false);
+                newReservationButton.setVisible(false);
+                newReservationButton.setManaged(false);
+                newResourceButton.setVisible(false);
+                newResourceButton.setManaged(false);
+                newEventButton.setVisible(false);
+                newEventButton.setManaged(false);
+            }
+        });
+    }
+    
+    
     
     private void initializeDAOs() {
         Connection conn = databaseConnection.getConnection();
@@ -197,16 +253,24 @@ public class dashboardController {
         statisticsView.setVisible(stats);
         usersView.setVisible(users);
     }
-
+    public void setCurrentUser(User user) {
+        this.currentUser = user;
+        // Hide users button immediately if not admin
+        if (!"admin".equals(currentUser.getRole())) {
+            usersButton.setVisible(false);
+        }
+    }
     // ... (keep existing imports and class declaration)
-
+    @FXML
+    private Button usersButton;
     @FXML
     private void showUsers() {
-        updateViewVisibility(false, false, false, false, true);
-        resourceFormView.setVisible(false);
-        reservationFormView.setVisible(false);
-        eventsView.setVisible(false);
-        eventFormView.setVisible(false);
+        if (!"admin".equals(currentUser.getRole())) {
+            usersTable.setVisible(false); // Hide the Actions column
+            usersButton.setVisible(false);
+
+        }
+        updateViewVisibility(false, false, false, false, true );
 
         // Initialize all columns
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -234,7 +298,6 @@ public class dashboardController {
         ObservableList<User> users = FXCollections.observableArrayList(userDAO.getAllUsers());
         usersTable.setItems(users);
     }
-
     @FXML
     private TableColumn<Reservation, Boolean> reminderColumn;
 

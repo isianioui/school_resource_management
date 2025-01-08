@@ -28,47 +28,39 @@ public class LoginController {
     @FXML
     private Label errorLabel;
 
-    public void handleLogin(ActionEvent event) {
-        String email = emailField.getText();
-        String password = passwordField.getText();
+    @FXML
+public void handleLogin(ActionEvent event) {
+    String email = emailField.getText();
+    String password = passwordField.getText();
 
-        // Ensure connection is active before login
-        Connection conn = databaseConnection.getConnection();
+    Connection conn = databaseConnection.getConnection();
+    UserDAO userDAO = new UserDAO();
+    User user = userDAO.loginUser(email, password);
 
-        UserDAO userDAO = new UserDAO();
-        User user = userDAO.loginUser(email, password);
+    if (user != null) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
+            Parent root = loader.load();
 
-        if (user != null) {
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/dashboard.fxml"));
-                Parent root = loader.load();
+            dashboardController dashboardController = loader.getController();
+            dashboardController.setUser(user);
+            dashboardController.setUserRole(user.getRole());  // Add this line
 
-                dashboardController dashboardController = loader.getController();
-                dashboardController.setUser(user);
+            Scene scene = new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(),
+                    Screen.getPrimary().getVisualBounds().getHeight());
+            scene.getStylesheets().add(getClass().getResource("/styles/dashboard.css").toExternalForm());
 
-                Scene scene = new Scene(root, Screen.getPrimary().getVisualBounds().getWidth(),
-                        Screen.getPrimary().getVisualBounds().getHeight());
-                scene.getStylesheets().add(getClass().getResource("/styles/dashboard.css").toExternalForm());
-
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setMaximized(true);
-                stage.setScene(scene);
-                stage.show();
-            } catch (IOException e) {
-                errorLabel.setText("Error loading dashboard: " + e.getMessage());
-            }
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setMaximized(true);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            errorLabel.setText("Error loading dashboard: " + e.getMessage());
         }
     }
+}
 
-    // public void goToRegister(ActionEvent event) throws IOException {
-    // FXMLLoader loader = new
-    // FXMLLoader(getClass().getResource("/views/registration.fxml"));
-    // VBox registrationView = loader.load(); // Ensure it's a VBox
-    // Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow(); //
-    // Get current stage
-    // Scene registrationScene = new Scene(registrationView); // Set the new scene
-    // stage.setScene(registrationScene);
-    // }
+
 
     public void goToRegister(ActionEvent event) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/registration.fxml"));
@@ -83,5 +75,10 @@ public class LoginController {
         stage.setScene(scene);
         stage.show();
     }
+    private String userRole;
+    @FXML
+    private Button loginButton;
+    private User loggedInUser;  // Add this at class level
+
 
 }
