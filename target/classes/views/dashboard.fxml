@@ -230,6 +230,9 @@
     </TableView>
 </VBox>
 
+<!-- report view -->
+
+
 
 <VBox fx:id="eventFormView" visible="false" spacing="15" styleClass="resource-form" maxWidth="500" alignment="CENTER">
     <padding>

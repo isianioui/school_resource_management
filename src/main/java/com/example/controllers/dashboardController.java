@@ -148,7 +148,7 @@ public class dashboardController {
     private TableColumn<Resource, String> descriptionColumn;
     @FXML
     private ComboBox<String> resourceTypeField;
-    
+
     private String userRole;
 
     @FXML
@@ -156,12 +156,11 @@ public class dashboardController {
     @FXML
     private Button newResourceButton;
     @FXML
-private Button newEventButton;
-
+    private Button newEventButton;
 
     @FXML
     public void initialize() {
-       
+
         initializeDAOs();
         setupTableColumns();
         setupInitialVisibility();
@@ -172,28 +171,28 @@ private Button newEventButton;
         reminderColumn.setCellValueFactory(new PropertyValueFactory<>("reminder_sent"));
         resourceTypeField.setItems(FXCollections.observableArrayList("terrain", "salle"));
         setupEventTable();
-        refreshEventTable();    
+        refreshEventTable();
 
     }
-   
+
     private void hideButtonsForNonAdmin() {
         Platform.runLater(() -> {
             if (!"admin".equals(userRole)) {
                 // Hide all buttons immediately
                 usersButton.setVisible(false);
                 usersButton.setManaged(false);
-                
+
                 // Make sure these buttons exist in your FXML with correct fx:id
                 if (newReservationButton != null) {
                     newReservationButton.setVisible(false);
                     newReservationButton.setManaged(false);
                 }
-                
+
                 if (newResourceButton != null) {
                     newResourceButton.setVisible(false);
                     newResourceButton.setManaged(false);
                 }
-                
+
                 if (newEventButton != null) {
                     newEventButton.setVisible(false);
                     newEventButton.setManaged(false);
@@ -201,14 +200,15 @@ private Button newEventButton;
             }
         });
     }
+
     public void setUserRole(String role) {
         this.userRole = role;
         Platform.runLater(() -> {
             if (!"admin".equals(userRole)) {
                 usersButton.setVisible(false);
                 usersButton.setManaged(false);
-                newReservationButton.setVisible(false);
-                newReservationButton.setManaged(false);
+                // newReservationButton.setVisible(false);
+                // newReservationButton.setManaged(false);
                 newResourceButton.setVisible(false);
                 newResourceButton.setManaged(false);
                 newEventButton.setVisible(false);
@@ -216,9 +216,7 @@ private Button newEventButton;
             }
         });
     }
-    
-    
-    
+
     private void initializeDAOs() {
         Connection conn = databaseConnection.getConnection();
         reservationDAO = new ReservationDAO();
@@ -227,7 +225,6 @@ private Button newEventButton;
         statisticsDAO = new StatisticsDAO();
         userDAO = new UserDAO();
     }
-    
 
     // private void updateViewVisibility(boolean res, boolean resource, boolean
     // event, boolean stats, boolean users) {
@@ -253,6 +250,7 @@ private Button newEventButton;
         statisticsView.setVisible(stats);
         usersView.setVisible(users);
     }
+
     public void setCurrentUser(User user) {
         this.currentUser = user;
         // Hide users button immediately if not admin
@@ -260,9 +258,11 @@ private Button newEventButton;
             usersButton.setVisible(false);
         }
     }
+
     // ... (keep existing imports and class declaration)
     @FXML
     private Button usersButton;
+
     @FXML
     private void showUsers() {
         if (!"admin".equals(currentUser.getRole())) {
@@ -270,7 +270,7 @@ private Button newEventButton;
             usersButton.setVisible(false);
 
         }
-        updateViewVisibility(false, false, false, false, true );
+        updateViewVisibility(false, false, false, false, true);
 
         // Initialize all columns
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
@@ -298,6 +298,7 @@ private Button newEventButton;
         ObservableList<User> users = FXCollections.observableArrayList(userDAO.getAllUsers());
         usersTable.setItems(users);
     }
+
     @FXML
     private TableColumn<Reservation, Boolean> reminderColumn;
 
@@ -435,56 +436,64 @@ private Button newEventButton;
                 }
             }
         });
-
+    
         // Setup action buttons
         reservationActionsColumn.setCellFactory(column -> new TableCell<Reservation, Void>() {
             private final Button viewButton = new Button("View");
-            private final Button editButton = new Button("Edit");
-            private final Button deleteButton = new Button("Delete");
-            private final Button reminderButton = new Button("Send Reminder");
-            private final Button confirmButton = new Button("Confirm");
-            private final Button cancelButton = new Button("Cancel");
-            private final HBox buttons = new HBox(5, viewButton, editButton, deleteButton, reminderButton,
-                    confirmButton, cancelButton);
-
+            private final HBox buttons = new HBox(5);
+    
             {
                 viewButton.getStyleClass().add("info-button");
-                editButton.getStyleClass().add("success-button");
-                deleteButton.getStyleClass().add("danger-button");
-                reminderButton.getStyleClass().add("info-button");
-                confirmButton.getStyleClass().add("success-button");
-                cancelButton.getStyleClass().add("danger-button");
-
+                buttons.getChildren().add(viewButton);
+    
+                // Only add admin buttons if user is admin
+                if ("admin".equals(currentUser.getRole())) {
+                    Button editButton = new Button("Edit");
+                    Button deleteButton = new Button("Delete");
+                    Button reminderButton = new Button("Send Reminder");
+                    Button confirmButton = new Button("Confirm");
+                    Button cancelButton = new Button("Cancel");
+    
+                    editButton.getStyleClass().add("success-button");
+                    deleteButton.getStyleClass().add("danger-button");
+                    reminderButton.getStyleClass().add("info-button");
+                    confirmButton.getStyleClass().add("success-button");
+                    cancelButton.getStyleClass().add("danger-button");
+    
+                    buttons.getChildren().addAll(editButton, deleteButton, reminderButton, confirmButton, cancelButton);
+    
+                    editButton.setOnAction(event -> {
+                        Reservation reservation = getTableView().getItems().get(getIndex());
+                        editReservation(reservation);
+                    });
+    
+                    confirmButton.setOnAction(event -> {
+                        Reservation reservation = getTableView().getItems().get(getIndex());
+                        updateReservationStatus(reservation, "confirmed");
+                    });
+    
+                    cancelButton.setOnAction(event -> {
+                        Reservation reservation = getTableView().getItems().get(getIndex());
+                        updateReservationStatus(reservation, "rejected");
+                    });
+    
+                    deleteButton.setOnAction(event -> {
+                        Reservation reservation = getTableView().getItems().get(getIndex());
+                        deleteReservation(reservation);
+                    });
+    
+                    reminderButton.setOnAction(event -> {
+                        Reservation reservation = getTableView().getItems().get(getIndex());
+                        sendReservationReminder(reservation);
+                    });
+                }
+    
                 viewButton.setOnAction(event -> {
                     Reservation reservation = getTableView().getItems().get(getIndex());
                     viewReservationDetails(reservation);
                 });
-
-                editButton.setOnAction(event -> {
-                    Reservation reservation = getTableView().getItems().get(getIndex());
-                    editReservation(reservation);
-                });
-                confirmButton.setOnAction(event -> {
-                    Reservation reservation = getTableView().getItems().get(getIndex());
-                    updateReservationStatus(reservation, "confirmed");
-                });
-
-                cancelButton.setOnAction(event -> {
-                    Reservation reservation = getTableView().getItems().get(getIndex());
-                    updateReservationStatus(reservation, "rejected");
-                });
-
-                deleteButton.setOnAction(event -> {
-                    Reservation reservation = getTableView().getItems().get(getIndex());
-                    deleteReservation(reservation);
-                });
-
-                reminderButton.setOnAction(event -> {
-                    Reservation reservation = getTableView().getItems().get(getIndex());
-                    sendReservationReminder(reservation);
-                });
             }
-
+    
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
@@ -492,6 +501,7 @@ private Button newEventButton;
             }
         });
     }
+    
 
     private void updateReservationStatus(Reservation reservation, String newStatus) {
         if (reservationDAO.updateReservationStatus(reservation.getReservation_id(), newStatus)) {
@@ -862,7 +872,6 @@ private Button newEventButton;
         eventsView.setVisible(false);
         eventFormView.setVisible(false);
 
-
         // Show statistics view for all users
         statisticsView.setVisible(true);
 
@@ -1069,158 +1078,147 @@ private Button newEventButton;
         reservationDAO.updateReservation(reservation);
     }
 
-// resources upadates 
+    // resources upadates
 
-@FXML
-private VBox resourceFormView;
+    @FXML
+    private VBox resourceFormView;
 
-@FXML
-private TextField resourceNameField;
+    @FXML
+    private TextField resourceNameField;
 
+    @FXML
+    private TextArea descriptionField;
 
+    @FXML
+    private TextField capacityField;
 
-@FXML
-private TextArea descriptionField;
+    @FXML
+    private void openNewResourceForm() {
+        resourceFormView.setVisible(true);
+        resourcesView.setVisible(false);
+    }
 
-@FXML
-private TextField capacityField;
+    @FXML
+    private void handleSaveResource() {
+        Resource newResource = new Resource();
+        newResource.setName(resourceNameField.getText());
+        newResource.setResource_type(resourceTypeField.getValue());
+        newResource.setDescription(descriptionField.getText());
 
+        int capacity = Integer.parseInt(capacityField.getText());
+        if (newResource.isValidCapacity(capacity)) {
+            newResource.setCapacity(capacity);
+            newResource.setAvailability(true);
 
-@FXML
-private void openNewResourceForm() {
-    resourceFormView.setVisible(true);
-    resourcesView.setVisible(false);
-}
-
-@FXML
-private void handleSaveResource() {
-    Resource newResource = new Resource();
-    newResource.setName(resourceNameField.getText());
-    newResource.setResource_type(resourceTypeField.getValue());
-    newResource.setDescription(descriptionField.getText());
-   
-    int capacity = Integer.parseInt(capacityField.getText());
-    if (newResource.isValidCapacity(capacity)) {
-        newResource.setCapacity(capacity);
-        newResource.setAvailability(true);
-       
-        if(resourceDAO.createResource(newResource)) {
-            refreshResourceTable();
-            resourceFormView.setVisible(false);
-            resourcesView.setVisible(true);
-            clearResourceForm();
+            if (resourceDAO.createResource(newResource)) {
+                refreshResourceTable();
+                resourceFormView.setVisible(false);
+                resourcesView.setVisible(true);
+                clearResourceForm();
+            }
         }
     }
-}
 
-private void refreshResourceTable() {
-    ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
-    resourcesTable.setItems(resources);
-}
-
-private void clearResourceForm() {
-    resourceNameField.clear();
-    resourceTypeField.setValue(null);
-
-    descriptionField.clear();
-    capacityField.clear();
-}
-@FXML
-private void handleBackToResources() {
-    resourceFormView.setVisible(false);
-    resourcesView.setVisible(true);
-}
-
-// events methods
-@FXML
-private TableColumn<Event, String> eventDescriptionColumn;
-@FXML
-private TableColumn<Event, Time> eventTimeColumn;
-
-
-@FXML
-private VBox eventFormView;
-@FXML
-private TextField eventNameField;
-@FXML
-private TextArea eventDescriptionField;
-@FXML
-private DatePicker eventDatePicker;
-@FXML
-private TextField eventTimeField;
-@FXML
-private TextField eventLocationField;
-
-@FXML
-private void openNewEventForm() {
-    eventFormView.setVisible(true);
-    eventsView.setVisible(false);
-}
-
-@FXML
-private void handleSaveEvent() {
-    try {
-        Event newEvent = new Event();
-        newEvent.setName(eventNameField.getText());
-        newEvent.setDescription(eventDescriptionField.getText());
-        newEvent.setEvent_date(Date.valueOf(eventDatePicker.getValue()));
-        newEvent.setEvent_time(Time.valueOf(eventTimeField.getText() + ":00"));
-        newEvent.setLocation(eventLocationField.getText());
-        newEvent.setCreated_by(currentUser.getId());  // Keep as ID for database storage
-
-        if(eventDAO.createEvent(newEvent)) {
-            refreshEventTable();
-            eventFormView.setVisible(false);
-            eventsView.setVisible(true);
-            clearEventForm();
-        }
-    } catch (Exception e) {
-        showAlert("Please enter time in HH:mm format (e.g., 14:30)");
+    private void refreshResourceTable() {
+        ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
+        resourcesTable.setItems(resources);
     }
-}
 
+    private void clearResourceForm() {
+        resourceNameField.clear();
+        resourceTypeField.setValue(null);
 
-private void refreshEventTable() {
-    ObservableList<Event> events = FXCollections.observableArrayList(eventDAO.getAllEvents());
-    eventsTable.setItems(events);
-}
+        descriptionField.clear();
+        capacityField.clear();
+    }
 
-private void clearEventForm() {
-    eventNameField.clear();
-    eventDescriptionField.clear();
-    eventDatePicker.setValue(null);
-    eventTimeField.clear();
-    eventLocationField.clear();
-}
+    @FXML
+    private void handleBackToResources() {
+        resourceFormView.setVisible(false);
+        resourcesView.setVisible(true);
+    }
 
-@FXML
-private void handleBackToEvents() {
-    eventFormView.setVisible(false);
-    eventsView.setVisible(true);
-}
+    // events methods
+    @FXML
+    private TableColumn<Event, String> eventDescriptionColumn;
+    @FXML
+    private TableColumn<Event, Time> eventTimeColumn;
 
-@FXML
-private TableColumn<Event, Integer> createdByColumn;
+    @FXML
+    private VBox eventFormView;
+    @FXML
+    private TextField eventNameField;
+    @FXML
+    private TextArea eventDescriptionField;
+    @FXML
+    private DatePicker eventDatePicker;
+    @FXML
+    private TextField eventTimeField;
+    @FXML
+    private TextField eventLocationField;
 
-private void setupEventTable() {
-    eventNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-    eventDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
-    eventDateColumn.setCellValueFactory(new PropertyValueFactory<>("event_date"));
-    eventTimeColumn.setCellValueFactory(new PropertyValueFactory<>("event_time"));
-    locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
-    createdByColumn.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
+    @FXML
+    private void openNewEventForm() {
+        eventFormView.setVisible(true);
+        eventsView.setVisible(false);
+    }
 
-    // Force table refresh
-    eventsTable.refresh();
-}
+    @FXML
+    private void handleSaveEvent() {
+        try {
+            Event newEvent = new Event();
+            newEvent.setName(eventNameField.getText());
+            newEvent.setDescription(eventDescriptionField.getText());
+            newEvent.setEvent_date(Date.valueOf(eventDatePicker.getValue()));
+            newEvent.setEvent_time(Time.valueOf(eventTimeField.getText() + ":00"));
+            newEvent.setLocation(eventLocationField.getText());
+            newEvent.setCreated_by(currentUser.getId()); // Keep as ID for database storage
 
+            if (eventDAO.createEvent(newEvent)) {
+                refreshEventTable();
+                eventFormView.setVisible(false);
+                eventsView.setVisible(true);
+                clearEventForm();
+            }
+        } catch (Exception e) {
+            showAlert("Please enter time in HH:mm format (e.g., 14:30)");
+        }
+    }
 
+    private void refreshEventTable() {
+        ObservableList<Event> events = FXCollections.observableArrayList(eventDAO.getAllEvents());
+        eventsTable.setItems(events);
+    }
 
+    private void clearEventForm() {
+        eventNameField.clear();
+        eventDescriptionField.clear();
+        eventDatePicker.setValue(null);
+        eventTimeField.clear();
+        eventLocationField.clear();
+    }
 
+    @FXML
+    private void handleBackToEvents() {
+        eventFormView.setVisible(false);
+        eventsView.setVisible(true);
+    }
 
+    @FXML
+    private TableColumn<Event, Integer> createdByColumn;
 
+    private void setupEventTable() {
+        eventNameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        eventDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
+        eventDateColumn.setCellValueFactory(new PropertyValueFactory<>("event_date"));
+        eventTimeColumn.setCellValueFactory(new PropertyValueFactory<>("event_time"));
+        locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
+        createdByColumn.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
 
+        // Force table refresh
+        eventsTable.refresh();
+    }
 
-
+    // report
 
 }
