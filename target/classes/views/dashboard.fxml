@@ -16,6 +16,8 @@
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
 
 <?import javafx.scene.control.TextArea?>
 <?import javafx.collections.FXCollections?>
@@ -293,8 +295,14 @@
                 </HBox>
             </VBox>
 
-<VBox fx:id="reportsView" visible="false">
-    <TableView fx:id="reportsTable">
+<VBox fx:id="reportsView" visible="false" spacing="10" VBox.vgrow="ALWAYS">
+
+    <Button fx:id="uploadReportButton" text="Upload New Report" onAction="#showUploadReportForm"/>
+
+    <TableView fx:id="reportsTable" VBox.vgrow="ALWAYS">
+      <VBox.margin>
+            <Insets top="-11" />
+        </VBox.margin>
         <columns>
             <TableColumn fx:id="reportTitleColumn" text="Title" prefWidth="${reportsTable.width * 0.245}"/>
             <TableColumn fx:id="reportDescriptionColumn" text="Description" prefWidth="${reportsTable.width * 0.245}"/>
@@ -303,6 +311,25 @@
         </columns>
     </TableView>
     <Button fx:id="uploadReportButton" text="Upload New Report" onAction="#showUploadReportForm"/>
+</VBox>
+
+<VBox fx:id="reportFormView" visible="false" spacing="15" styleClass="resource-form" maxWidth="500" alignment="CENTER">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Upload New Report" styleClass="form-title"/>
+    <TextField fx:id="reportTitleField" promptText="Report Title" maxWidth="300"/>
+    <TextArea fx:id="reportDescriptionField" promptText="Description" maxWidth="300" wrapText="true"/>
+        <ComboBox fx:id="relatedEventComboBox" promptText="Select Related Event (Optional)" maxWidth="300"/>
+
+    <CheckBox fx:id="reportIsPublicCheck" text="Make Public" maxWidth="300"/>
+    <Button text="Choose File" onAction="#chooseReportFile" maxWidth="300"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Upload" onAction="#handleReportUpload" styleClass="success-button"/>
+        <Button text="Cancel" onAction="#cancelReportUpload" styleClass="danger-button"/>
+    </HBox>
 </VBox>
 
 

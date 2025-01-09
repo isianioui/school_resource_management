@@ -20,6 +20,8 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+
+import java.util.List;
 import java.util.Optional;
 import java.awt.Desktop;
 import java.sql.Connection;
@@ -192,6 +194,11 @@ private TableColumn<Report, Void> reportActionsColumn;
     reportDateColumn.setCellValueFactory(new PropertyValueFactory<>("uploadDate"));
     setupReportActionsColumn();
     reportDAO = new ReportDAO(conn);
+    reportTitleColumn.setCellValueFactory(new PropertyValueFactory<>("title"));
+    reportDescriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description")); 
+    reportDateColumn.setCellValueFactory(new PropertyValueFactory<>("uploadDate"));
+    reportsView.setVisible(false);
+
 
     }
 
@@ -202,11 +209,10 @@ private TableColumn<Report, Void> reportActionsColumn;
                 usersButton.setVisible(false);
                 usersButton.setManaged(false);
 
-                // Make sure these buttons exist in your FXML with correct fx:id
-                if (newReservationButton != null) {
-                    newReservationButton.setVisible(false);
-                    newReservationButton.setManaged(false);
-                }
+                // if (newReservationButton != null) {
+                //     newReservationButton.setVisible(false);
+                //     newReservationButton.setManaged(false);
+                // }
 
                 if (newResourceButton != null) {
                     newResourceButton.setVisible(false);
@@ -262,6 +268,9 @@ private TableColumn<Report, Void> reportActionsColumn;
         eventsView.setVisible(false);
         statisticsView.setVisible(false);
         usersView.setVisible(false);
+        reportsView.setVisible(false);  
+        reportFormView.setVisible(false);  
+        reportFormView.setManaged(false);
 
         // Show only the requested view
         reservationsView.setVisible(res);
@@ -425,15 +434,22 @@ private VBox reportsView;
     @FXML
     private void showReports() {
         // Hide other views
-        reservationFormView.setVisible(false);
-        eventsView.setVisible(false);
-        eventFormView.setVisible(false);
+        reservationsView.setVisible(false);
+    resourcesView.setVisible(false);
+    eventsView.setVisible(false);
+    statisticsView.setVisible(false);
+    statisticsView.setManaged(false);  
+
+    usersView.setVisible(false);
+    reservationFormView.setVisible(false);
+    eventFormView.setVisible(false);
+    reportsView.setVisible(true);
+    reportsView.setManaged(true);
+
         
-        // Show reports view
         updateViewVisibility(false, false, false, true, false);
         reportsView.setVisible(true);
         
-        // Refresh the reports table
         refreshReportsTable();
     }
     
@@ -467,7 +483,6 @@ private VBox reportsView;
             }
         });
     
-        // Setup action buttons
         reservationActionsColumn.setCellFactory(column -> new TableCell<Reservation, Void>() {
             private final Button viewButton = new Button("View");
             private final HBox buttons = new HBox(5);
@@ -763,7 +778,6 @@ private VBox reportsView;
 
     @FXML
     private void createEvent() {
-        // Implement event creation logic
     }
 
     @FXML
@@ -857,13 +871,11 @@ private VBox reportsView;
         this.currentUser = user;
         userNameLabel.setText("Welcome, " + user.getUsername());
 
-        // Update UI based on user role without button visibility checks
         boolean isAdmin = user.getRole().equals("admin");
-        // Add any other role-specific UI updates here that don't involve the removed
-        // buttons
+    
 
-        loadUserData(); // If you have this method
-        setupUserAccess(); // Now this will only handle the reminder column
+        loadUserData(); 
+        setupUserAccess(); 
         showDashboard();
 
     }
@@ -892,7 +904,8 @@ private VBox reportsView;
     // }
     @FXML
     private void showDashboard() {
-        // Hide all other views first
+        updateViewVisibility(false, false, false, true, false);
+
         usersView.setVisible(false);
         reservationsView.setVisible(false);
         resourcesView.setVisible(false);
@@ -901,11 +914,13 @@ private VBox reportsView;
         reservationFormView.setVisible(false);
         eventsView.setVisible(false);
         eventFormView.setVisible(false);
+        reportsView.setVisible(false);
 
-        // Show statistics view for all users
+        reportsView.setManaged(false); 
+        reportFormView.setVisible(false);
+        reportFormView.setManaged(false);
         statisticsView.setVisible(true);
 
-        // Load dashboard data using the existing loadAdminDashboard method
         loadAdminDashboard();
     }
 
@@ -990,13 +1005,11 @@ private VBox reportsView;
 
     @FXML
     private void handleContactClick() {
-        // Implement contact functionality
         System.out.println("Contact clicked");
     }
 
     @FXML
     private void handleNotificationClick() {
-        // Implement notification functionality
         System.out.println("Notifications clicked");
     }
 
@@ -1009,7 +1022,7 @@ private VBox reportsView;
             System.out.println("Selected Resource Name: " + selectedResource.getName());
 
             reservation.setResource_id(selectedResource.getResource_id());
-            reservation.setResource_type(selectedResource.getResource_type()); // Add this line
+            reservation.setResource_type(selectedResource.getResource_type()); 
 
             reservation.setUser_id(currentUser.getId());
             reservation.setReservation_date(Date.valueOf(datePicker.getValue()));
@@ -1069,20 +1082,16 @@ private VBox reportsView;
         reservationsView.setVisible(false);
         reservationEditView.setVisible(true);
 
-        // Load resources
         ObservableList<Resource> resources = FXCollections.observableArrayList(resourceDAO.getAllResources());
         editResourceComboBox.setItems(resources);
         editResourceComboBox.setPromptText("Select Resource");
         editResourceComboBox.setValue(resourceDAO.getResourceById(reservation.getResource_id()));
 
-        // Set date
         editDatePicker.setValue(reservation.getReservation_date().toLocalDate());
 
-        // Set time in text field
         editTimeField.setText(reservation.getReservation_time().toString().substring(0, 5));
         editTimeField.setPromptText("Enter time (HH:mm)");
 
-        // Set status options
         editStatusComboBox.setItems(FXCollections.observableArrayList("pending", "confirmed", "rejected"));
         editStatusComboBox.setValue(reservation.getStatus());
 
@@ -1245,66 +1254,109 @@ private VBox reportsView;
         locationColumn.setCellValueFactory(new PropertyValueFactory<>("location"));
         createdByColumn.setCellValueFactory(new PropertyValueFactory<>("creator_name"));
 
-        // Force table refresh
         eventsTable.refresh();
     }
 
     // report part
     private ReportDAO reportDAO;
-
+    private File selectedFile;
+    @FXML
+    private VBox reportFormView;
+    @FXML
+    private TextField reportTitleField;
+    @FXML
+    private TextArea reportDescriptionField;
+    @FXML
+    private CheckBox reportIsPublicCheck;
 
     @FXML
-private void showUploadReportForm() {
+    private void showUploadReportForm() {
+        statisticsView.setVisible(false);
+        statisticsView.setManaged(false);
+        usersView.setVisible(false);
+        usersView.setManaged(false);
+        reservationsView.setVisible(false);
+        reservationsView.setManaged(false);
+        resourcesView.setVisible(false);
+        resourcesView.setManaged(false);
+        eventsView.setVisible(false);
+        eventsView.setManaged(false);
+        reportsView.setVisible(false);
+        reportsView.setManaged(false);
+        resourceFormView.setVisible(false);
+        resourceFormView.setManaged(false);
+        reservationFormView.setVisible(false);
+        reservationFormView.setManaged(false);
+        eventFormView.setVisible(false);
+        eventFormView.setManaged(false);
+        reportFormView.setVisible(true);
+        reportFormView.setManaged(true);
+        List<Event> events = eventDAO.getAllEvents();
+        ObservableList<Event> observableEvents = FXCollections.observableArrayList(events);
+        relatedEventComboBox.setItems(observableEvents);
+        
+        relatedEventComboBox.setCellFactory(param -> new ListCell<Event>() {
+            @Override
+            protected void updateItem(Event event, boolean empty) {
+                super.updateItem(event, empty);
+                setText(empty ? "" : event.getName());
+            }
+        });
+    }
+    
+
+    @FXML
+private void chooseReportFile() {
     FileChooser fileChooser = new FileChooser();
     fileChooser.getExtensionFilters().addAll(
         new FileChooser.ExtensionFilter("PDF Files", "*.pdf"),
         new FileChooser.ExtensionFilter("Image Files", "*.png", "*.jpg", "*.jpeg")
     );
-    
-    File selectedFile = fileChooser.showOpenDialog(null);
+    selectedFile = fileChooser.showOpenDialog(null);
+}
+@FXML
+private void handleReportUpload() {
     if (selectedFile != null) {
-        Dialog<Report> dialog = new Dialog<>();
-        dialog.setTitle("Upload Report");
+        Report report = new Report();
+        report.setTitle(reportTitleField.getText());
+        report.setDescription(reportDescriptionField.getText());
+        report.setFileType(selectedFile.getName().substring(selectedFile.getName().lastIndexOf(".") + 1));
+        report.setUploadedBy(currentUser.getId());
+        report.setPublic(reportIsPublicCheck.isSelected());
         
-        GridPane grid = new GridPane();
-        TextField titleField = new TextField();
-        TextArea descriptionArea = new TextArea();
-        CheckBox isPublicCheck = new CheckBox("Make Public");
-        
-        grid.add(new Label("Title:"), 0, 0);
-        grid.add(titleField, 1, 0);
-        grid.add(new Label("Description:"), 0, 1);
-        grid.add(descriptionArea, 1, 1);
-        grid.add(isPublicCheck, 1, 2);
-        
-        dialog.getDialogPane().setContent(grid);
-        dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        
-        dialog.setResultConverter(buttonType -> {
-            if (buttonType == ButtonType.OK) {
-                Report report = new Report();
-                report.setTitle(titleField.getText());
-                report.setDescription(descriptionArea.getText());
-                report.setFileType(selectedFile.getName().substring(selectedFile.getName().lastIndexOf(".") + 1));
-                report.setUploadedBy(currentUser.getId());
-                report.setPublic(isPublicCheck.isSelected());
-                return report;
-            }
-            return null;
-        });
-        
-        Optional<Report> result = dialog.showAndWait();
-        result.ifPresent(report -> {
-            if (reportDAO.uploadReport(report, selectedFile)) {
-                refreshReportsTable();
-            }
-        });
+        Event selectedEvent = relatedEventComboBox.getValue();
+        if (selectedEvent != null) {
+            report.setRelatedEventId(selectedEvent.getEvent_id());
+        }
+
+        if (reportDAO.uploadReport(report, selectedFile)) {
+            clearReportForm();
+            reportFormView.setVisible(false);
+            reportsView.setVisible(true);
+            refreshReportsTable();
+        }
     }
+}
+private void clearReportForm() {
+    reportTitleField.clear();
+    reportDescriptionField.clear();
+    reportIsPublicCheck.setSelected(false);
+    selectedFile = null;
+}
+
+
+@FXML
+private void cancelReportUpload() {
+    clearReportForm();
+    reportFormView.setVisible(false);
+    reportsView.setVisible(true);
 }
 
 private void refreshReportsTable() {
     ObservableList<Report> reports = FXCollections.observableArrayList(reportDAO.getAllReports());
     reportsTable.setItems(reports);
+    reportsTable.refresh();
+
 }
 
 @FXML
@@ -1371,5 +1423,24 @@ private void deleteReport(Report report) {
     }
 }
 
+
+@FXML
+private ComboBox<Event> relatedEventComboBox;
+
+private void loadEventComboBox() {
+    List<Event> events = eventDAO.getAllEvents();
+    relatedEventComboBox.setItems(FXCollections.observableArrayList(events));
+    relatedEventComboBox.setCellFactory(param -> new ListCell<Event>() {
+        @Override
+        protected void updateItem(Event event, boolean empty) {
+            super.updateItem(event, empty);
+            if (empty || event == null) {
+                setText(null);
+            } else {
+                setText(event.getName());
+            }
+        }
+    });
+}
 
 }
