@@ -51,7 +51,7 @@
 
     <!-- Left Sidebar Navigation -->
      <left>
-        <VBox styleClass="sidebar" VBox.vgrow="ALWAYS">
+        <VBox styleClass="sidebar" VBox.vgrow="ALWAYS" alignment="TOP_CENTER">
             <Button text="Dashboard" onAction="#showDashboard" styleClass="nav-button"/>
 <Button fx:id="usersButton" text="Users" onAction="#showUsers" styleClass="nav-button"/>
             <Button text="Reservations" onAction="#showReservations" styleClass="nav-button"/>
@@ -59,7 +59,12 @@
             <Button text="Events" onAction="#showEvents" styleClass="nav-button"/>
             <Button text="Reports" onAction="#showReports" styleClass="nav-button"/>
             <Button text="Notifications" onAction="#showNotifications" styleClass="nav-button"/>
+                    <Pane VBox.vgrow="ALWAYS" minHeight="300"/>
+
             <Button text="Logout" onAction="#handleLogout" styleClass="logout-button"/>
+              <VBox.margin>
+                <Insets bottom="300.0"/>
+            </VBox.margin>
           
         </VBox>
     </left>

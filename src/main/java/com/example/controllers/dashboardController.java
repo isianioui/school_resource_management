@@ -1437,7 +1437,7 @@ private void loadEventComboBox() {
             if (empty || event == null) {
                 setText(null);
             } else {
-                setText(event.getName());
+                setText(event.getName() );
             }
         }
     });

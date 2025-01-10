@@ -62,6 +62,8 @@
     -fx-border-radius: 5;
     -fx-background-radius: 5;
     -fx-cursor: hand;
+    -fx-translate-y: -300px;
+
 }
 
 .logout-button:hover {
